@@ -1,13 +1,325 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTH
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  character     Character?
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// CHARACTER
+// ============================================
+
+model Character {
+  id             String        @id @default(cuid())
+  userId         String        @unique
+  name           String
+  classId        String        // medjay | siptu | kher-heb | ashipu | seba
+  level          Int           @default(1)
+  experience     Int           @default(0)
+
+  // Base stats
+  hp             Int           @default(100)
+  maxHp          Int           @default(100)
+  mp             Int           @default(50)
+  maxMp          Int           @default(50)
+  str            Int           @default(10)
+  agi            Int           @default(10)
+  int_stat       Int           @default(10)
+  vit            Int           @default(10)
+
+  // Attribute points
+  attributePoints Int          @default(0)
+
+  // Alignment: -100 (Egypt) to +100 (Mesopotamia)
+  alignment      Int           @default(0)
+
+  // Gold and currencies
+  gold           Int           @default(100)
+  soulShard      Int           @default(0)
+  offering       Int           @default(0)
+  guildToken     Int           @default(0)
+
+  // Ascension
+  ascensionCount Int           @default(0)
+  ascensionPoints Int          @default(0)
+
+  // Combat state
+  isInCombat     Boolean       @default(false)
+  currentAreaId  String?
+  combatStartedAt DateTime?
+  lastOnlineAt   DateTime      @default(now())
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills         CharacterSkill[]
+  inventory      InventoryItem[]
+  equipment      Equipment?
+  questProgress  QuestProgress[]
+  achievements   CharacterAchievement[]
+  pets           CharacterPet[]
+  loreFragments  CharacterLore[]
+}
+
+// ============================================
+// SKILLS
+// ============================================
+
+model CharacterSkill {
+  id            String    @id @default(cuid())
+  characterId   String
+  skillId       String    // melee | ranged | magic | defense | excavation | etc
+  level         Int       @default(1)
+  experience    Int       @default(0)
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, skillId])
+}
+
+// ============================================
+// INVENTORY & EQUIPMENT
+// ============================================
+
+model InventoryItem {
+  id            String    @id @default(cuid())
+  characterId   String
+  itemId        String    // refers to static data item ID
+  quantity      Int       @default(1)
+  tier          String    @default("common") // common | uncommon | rare | epic | legendary | divine
+  enchants      Json?     // array of enchant objects
+  createdAt     DateTime  @default(now())
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@index([characterId])
+}
+
+model Equipment {
+  id            String    @id @default(cuid())
+  characterId   String    @unique
+  weapon        String?   // inventoryItem id
+  helmet        String?
+  chest         String?
+  gloves        String?
+  boots         String?
+  accessory1    String?
+  accessory2    String?
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// WORLD DATA (zones, areas, monsters)
+// ============================================
+
+model Zone {
+  id            String  @id
+  name          String
+  alignment     String  // egypt | mesopotamia | neutral
+  minLevel      Int
+  unlocked      Boolean @default(false)
+  order         Int
+
+  areas         Area[]
+}
+
+model Area {
+  id            String  @id
+  zoneId        String
+  name          String
+  minCombatLevel Int
+  order         Int
+
+  zone          Zone    @relation(fields: [zoneId], references: [id])
+  monsters      AreaMonster[]
+}
+
+model Monster {
+  id            String  @id
+  name          String
+  zoneId        String
+  hp            Int
+  minDamage     Int
+  maxDamage     Int
+  expReward     Int
+  goldMin       Int
+  goldMax       Int
+  alignment     String  // egypt | mesopotamia | neutral
+  isBoss        Boolean @default(false)
+
+  areas         AreaMonster[]
+  lootTable     MonsterLoot[]
+}
+
+model AreaMonster {
+  areaId        String
+  monsterId     String
+  weight        Int     @default(100) // spawn weight
+
+  area          Area    @relation(fields: [areaId], references: [id])
+  monster       Monster @relation(fields: [monsterId], references: [id])
+
+  @@id([areaId, monsterId])
+}
+
+model MonsterLoot {
+  id            String  @id @default(cuid())
+  monsterId     String
+  itemId        String
+  dropChance    Float   // 0.0 - 1.0
+  minQuantity   Int     @default(1)
+  maxQuantity   Int     @default(1)
+
+  monster       Monster @relation(fields: [monsterId], references: [id])
+}
+
+// ============================================
+// QUESTS
+// ============================================
+
+model QuestProgress {
+  id            String    @id @default(cuid())
+  characterId   String
+  questId       String
+  type          String    // daily | weekly
+  progress      Int       @default(0)
+  completed     Boolean   @default(false)
+  claimedAt     DateTime?
+  resetAt       DateTime
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, questId])
+}
+
+// ============================================
+// ACHIEVEMENTS
+// ============================================
+
+model CharacterAchievement {
+  id            String    @id @default(cuid())
+  characterId   String
+  achievementId String
+  unlockedAt    DateTime  @default(now())
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, achievementId])
+}
+
+// ============================================
+// PETS
+// ============================================
+
+model CharacterPet {
+  id            String    @id @default(cuid())
+  characterId   String
+  petId         String
+  level         Int       @default(1)
+  experience    Int       @default(0)
+  isActive      Boolean   @default(false)
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, petId])
+}
+
+// ============================================
+// LORE
+// ============================================
+
+model CharacterLore {
+  id            String    @id @default(cuid())
+  characterId   String
+  loreId        String
+  collectedAt   DateTime  @default(now())
+
+  character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([characterId, loreId])
+}
+
+// ============================================
+// GUILD
+// ============================================
+
+model Guild {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  description   String?   @db.Text
+  leaderId      String
+  level         Int       @default(1)
+  experience    Int       @default(0)
+  createdAt     DateTime  @default(now())
+
+  members       GuildMember[]
+}
+
+model GuildMember {
+  guildId       String
+  characterId   String
+  role          String    @default("member") // leader | officer | member
+  joinedAt      DateTime  @default(now())
+  contribution  Int       @default(0)
+
+  guild         Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, characterId])
 }
