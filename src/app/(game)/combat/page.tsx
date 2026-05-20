@@ -1,12 +1,54 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { useCombat } from "@/hooks/useCombat";
-import { ZONES, getAvailableAreas } from "@/data/zones";
+import { getAvailableAreas } from "@/data/zones";
+import { CHARACTER_CLASSES, CLASS_ICONS } from "@/data/characters";
+
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Home", icon: "⚱" },
+  { href: "/combat", label: "Combat", icon: "⚔️" },
+  { href: "/inventory", label: "Inventory", icon: "🎒" },
+  { href: "/skills", label: "Skills", icon: "📊" },
+  { href: "/crafting", label: "Crafting", icon: "🔨" },
+  { href: "/guild", label: "Guild", icon: "🏛️" },
+];
+
+const LOG_COLORS: Record<string, string> = {
+  combat: "#c4bfb0",
+  loot: "#f59e0b",
+  levelup: "#34d399",
+  death: "#ef4444",
+  system: "#60a5fa",
+};
+
+// Monster emoji placeholder per area — nanti ganti sprite
+const AREA_MONSTERS: Record<string, { name: string; emoji: string; color: string }[]> = {
+  area1_1: [
+    { name: "Crocodile Hatchling", emoji: "🐊", color: "#16a34a" },
+    { name: "Reed Sprite", emoji: "🌿", color: "#15803d" },
+  ],
+  area1_2: [
+    { name: "Cursed Ibis", emoji: "🦅", color: "#7c3aed" },
+    { name: "Marsh Lurker", emoji: "👁️", color: "#6d28d9" },
+  ],
+  area1_3: [
+    { name: "Flood Elemental", emoji: "💧", color: "#1d4ed8" },
+    { name: "Silt Golem", emoji: "🪨", color: "#78716c" },
+  ],
+  area1_4: [
+    { name: "Sobek Cultist", emoji: "🐍", color: "#b45309" },
+    { name: "Alpha Crocodile", emoji: "🐊", color: "#dc2626" },
+  ],
+};
 
 export default function CombatPage() {
   const [character, setCharacter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [currentMonster, setCurrentMonster] = useState<{ name: string; emoji: string; color: string } | null>(null);
+  const [attackAnim, setAttackAnim] = useState(false);
 
   async function fetchCharacter() {
     const res = await fetch("/api/character");
@@ -15,172 +57,333 @@ export default function CombatPage() {
     setLoading(false);
   }
 
-  const { state, startCombat, stopCombat } = useCombat(fetchCharacter);
-
-  useEffect(() => {
+  function handleStatsUpdate() {
     fetchCharacter();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
-        <p className="text-stone-400 animate-pulse">Memuat...</p>
-      </div>
-    );
+    // Animate attack + cycle monster
+    setAttackAnim(true);
+    setTimeout(() => setAttackAnim(false), 300);
   }
 
+  const { state, startCombat, stopCombat } = useCombat(handleStatsUpdate);
+
+  // Cycle monster display every few seconds when in combat
+  useEffect(() => {
+    if (!state.isActive || !state.currentAreaId) {
+      setCurrentMonster(null);
+      return;
+    }
+    const monsters = AREA_MONSTERS[state.currentAreaId] ?? [];
+    if (!monsters.length) return;
+
+    function pickRandom() {
+      setCurrentMonster(monsters[Math.floor(Math.random() * monsters.length)]);
+    }
+    pickRandom();
+    const iv = setInterval(pickRandom, 3500);
+    return () => clearInterval(iv);
+  }, [state.isActive, state.currentAreaId]);
+
+  useEffect(() => { fetchCharacter(); }, []);
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <span style={{ color: "#6b6b80", fontFamily: "Georgia, serif" }}>Memuat...</span>
+    </div>
+  );
   if (!character) return null;
 
-  const meleeLevel = character.skills?.find((s: any) => s.skillId === "melee")?.level ?? 1;
+  const classData = CHARACTER_CLASSES.find((c) => c.id === character.classId);
+  const meleeSkill = character.skills?.find((s: any) => s.skillId === "melee");
+  const meleeLevel = meleeSkill?.level ?? 1;
+  const meleeExp = meleeSkill?.experience ?? 0;
   const availableAreas = getAvailableAreas(meleeLevel);
-  const hpPercent = (character.hp / character.maxHp) * 100;
-
-  const logColors: Record<string, string> = {
-    combat: "text-stone-300",
-    loot: "text-amber-400",
-    levelup: "text-emerald-400",
-    death: "text-red-400",
-    system: "text-blue-400",
-  };
+  const hpPct = Math.round((character.hp / character.maxHp) * 100);
+  const meleePct = Math.min(100, Math.round((meleeExp / 1000) * 100));
 
   return (
-    <div className="min-h-screen bg-stone-950 px-4 py-6">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-stone-100 mb-6">⚔️ Combat</h1>
+    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#e2e0d8", fontFamily: "Georgia, serif", display: "flex" }}>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Sidebar ── */}
+      <aside style={{
+        width: "210px", flexShrink: 0,
+        background: "linear-gradient(180deg,#111118,#0d0d14)",
+        borderRight: "1px solid #2a2a3a",
+        display: "flex", flexDirection: "column",
+      }}>
+        <div style={{ padding: "22px 18px 18px", borderBottom: "1px solid #1e1e2e" }}>
+          <div style={{ fontSize: "10px", letterSpacing: "0.3em", color: "#6b6b80", marginBottom: "3px" }}>IDLE MMO</div>
+          <div style={{ fontSize: "14px", fontWeight: "bold", color: "#f59e0b" }}>⚱ SANDS OF ETERNITY</div>
+        </div>
 
-          {/* Left — Area select */}
-          <div className="lg:col-span-1 space-y-4">
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid #1e1e2e" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "9px", marginBottom: "10px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#1a1a28", border: "1px solid #2e2e44", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
+              {classData ? CLASS_ICONS[classData.id] : "⚔️"}
+            </div>
+            <div>
+              <div style={{ fontWeight: "bold", fontSize: "13px", color: "#f0ece0" }}>{character.name}</div>
+              <div style={{ fontSize: "10px", color: "#6b6b80" }}>{classData?.name} · Lv {character.level}</div>
+            </div>
+          </div>
+          <MiniBar label="HP" value={character.hp} max={character.maxHp} pct={hpPct} color="#ef4444" />
+        </div>
 
-            {/* Character status */}
-            <div className="bg-stone-900 border border-stone-700 rounded-xl p-4">
-              <h2 className="text-stone-300 font-semibold text-sm mb-3">{character.name}</h2>
-              <div className="mb-2">
-                <div className="flex justify-between text-xs text-stone-400 mb-1">
-                  <span>HP</span>
-                  <span>{character.hp} / {character.maxHp}</span>
+        <nav style={{ flex: 1, padding: "10px 8px" }}>
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.href} href={item.href} style={{
+              display: "flex", alignItems: "center", gap: "9px",
+              padding: "8px 11px", borderRadius: "8px", marginBottom: "2px",
+              textDecoration: "none",
+              background: item.href === "/combat" ? "rgba(245,158,11,0.1)" : "transparent",
+              border: item.href === "/combat" ? "1px solid rgba(245,158,11,0.2)" : "1px solid transparent",
+              color: item.href === "/combat" ? "#f59e0b" : "#8a8a9a",
+              fontSize: "13px", fontFamily: "Georgia, serif",
+            }}>
+              <span style={{ fontSize: "14px" }}>{item.icon}</span>{item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div style={{ padding: "10px 8px", borderTop: "1px solid #1e1e2e" }}>
+          <button onClick={() => signOut({ callbackUrl: "/login" })} style={{
+            width: "100%", padding: "8px", borderRadius: "8px",
+            background: "transparent", border: "1px solid #2a2a3a",
+            color: "#6b6b80", fontSize: "12px", fontFamily: "Georgia, serif", cursor: "pointer",
+          }}>← Keluar</button>
+        </div>
+      </aside>
+
+      {/* ── Main ── */}
+      <main style={{ flex: 1, padding: "24px 28px", display: "flex", gap: "20px", overflow: "auto" }}>
+
+        {/* ── LEFT: Area selector + session stats ── */}
+        <div style={{ width: "220px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
+
+          {/* Melee level */}
+          <div style={card}>
+            <Label>Melee Skill</Label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <span style={{ fontSize: "13px", color: "#c4bfb0" }}>⚔️ Melee</span>
+              <span style={{ fontSize: "13px", fontWeight: "bold", color: "#f59e0b", background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "6px", padding: "1px 8px" }}>Lv {meleeLevel}</span>
+            </div>
+            <div style={{ height: "4px", background: "#0f0f1a", borderRadius: "2px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${meleePct}%`, background: "#d97706", borderRadius: "2px", transition: "width 0.5s" }} />
+            </div>
+            <div style={{ fontSize: "10px", color: "#4a4a5a", marginTop: "4px", textAlign: "right" }}>{meleeExp} / 1000 exp</div>
+          </div>
+
+          {/* Session */}
+          {state.isActive && (
+            <div style={card}>
+              <Label>Sesi Ini</Label>
+              {[
+                { label: "Kill", val: state.stats.killCount, color: "#c4bfb0" },
+                { label: "EXP", val: `+${state.stats.totalExp}`, color: "#34d399" },
+                { label: "Gold", val: `+${state.stats.totalGold}`, color: "#f59e0b" },
+              ].map((s) => (
+                <div key={s.label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1a1a28" }}>
+                  <span style={{ fontSize: "11px", color: "#6b6b80" }}>{s.label}</span>
+                  <span style={{ fontSize: "12px", fontWeight: "bold", color: s.color }}>{s.val}</span>
                 </div>
-                <div style={{ height: "6px", backgroundColor: "#292524", borderRadius: "999px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${hpPercent}%`, backgroundColor: "#ef4444", borderRadius: "999px" }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 mt-3 text-xs">
-                <div className="bg-stone-800 rounded px-2 py-1 flex justify-between">
-                  <span className="text-stone-500">Melee</span>
-                  <span className="text-amber-400">Lv {meleeLevel}</span>
-                </div>
-                <div className="bg-stone-800 rounded px-2 py-1 flex justify-between">
-                  <span className="text-stone-500">Gold</span>
-                  <span className="text-amber-400">{character.gold.toLocaleString()}</span>
-                </div>
-              </div>
+              ))}
+            </div>
+          )}
+
+          {/* Area list */}
+          <div style={card}>
+            <Label>Area Farming</Label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              {availableAreas.map(({ area, zone }) => {
+                const isActive = state.currentAreaId === area.id;
+                return (
+                  <button key={area.id} onClick={() => isActive ? stopCombat() : startCombat(area.id, area.name)}
+                    style={{
+                      textAlign: "left", padding: "9px 10px", borderRadius: "7px",
+                      background: isActive ? "rgba(220,38,38,0.1)" : "#0f0f1a",
+                      outline: isActive ? "1px solid rgba(220,38,38,0.3)" : "1px solid #1e1e2e",
+                      border: "none", cursor: "pointer", transition: "all 0.2s",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "12px", fontWeight: "bold", color: isActive ? "#fca5a5" : "#c4bfb0", fontFamily: "Georgia, serif" }}>{area.name}</span>
+                      {isActive && <span style={{ fontSize: "9px", color: "#ef4444", background: "rgba(220,38,38,0.2)", borderRadius: "3px", padding: "1px 5px" }}>AKTIF</span>}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#4a4a5a", marginTop: "1px", fontFamily: "Georgia, serif" }}>{zone.name} · Lv {area.minCombatLevel}+</div>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Session stats */}
-            {(state.stats.killCount > 0 || state.isActive) && (
-              <div className="bg-stone-900 border border-stone-700 rounded-xl p-4">
-                <h2 className="text-stone-400 text-xs font-semibold mb-2 uppercase tracking-wider">Sesi Ini</h2>
-                <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Kill</span>
-                    <span className="text-stone-200">{state.stats.killCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">EXP</span>
-                    <span className="text-emerald-400">+{state.stats.totalExp.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-stone-500">Gold</span>
-                    <span className="text-amber-400">+{state.stats.totalGold.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Area list */}
-            <div className="bg-stone-900 border border-stone-700 rounded-xl p-4">
-              <h2 className="text-stone-400 text-xs font-semibold mb-3 uppercase tracking-wider">Pilih Area</h2>
-              <div className="space-y-2">
-                {availableAreas.map(({ area, zone }) => {
-                  const isActive = state.currentAreaId === area.id;
-                  return (
-                    <button
-                      key={area.id}
-                      onClick={() => isActive ? stopCombat() : startCombat(area.id, area.name)}
-                      className={[
-                        "w-full text-left rounded-lg px-3 py-2.5 text-sm transition-all border",
-                        isActive
-                          ? "bg-red-950/40 border-red-700 text-red-300"
-                          : "bg-stone-800 border-stone-600 hover:border-stone-400 text-stone-300",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{area.name}</span>
-                        {isActive && (
-                          <span className="text-xs bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded animate-pulse">
-                            AKTIF
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-stone-500 mt-0.5">
-                        {zone.name} · Min Melee Lv {area.minCombatLevel}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Stop button */}
             {state.isActive && (
-              <button
-                onClick={stopCombat}
-                className="w-full bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-300 font-semibold rounded-xl px-4 py-3 transition-colors text-sm"
-              >
-                🛑 Hentikan Combat
-              </button>
+              <button onClick={stopCombat} style={{
+                marginTop: "8px", width: "100%", padding: "8px", borderRadius: "7px",
+                background: "rgba(220,38,38,0.08)", border: "1px solid #3a2020",
+                color: "#ef4444", fontSize: "12px", fontFamily: "Georgia, serif",
+                cursor: "pointer", fontWeight: "bold",
+              }}>🛑 Hentikan</button>
             )}
           </div>
 
-          {/* Right — Combat log */}
-          <div className="lg:col-span-2">
-            <div className="bg-stone-900 border border-stone-700 rounded-xl p-4 h-full min-h-[500px] flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-stone-300 font-semibold text-sm">
-                  Combat Log
-                  {state.currentAreaName && (
-                    <span className="text-stone-500 font-normal ml-2">— {state.currentAreaName}</span>
-                  )}
-                </h2>
-                {state.isActive && (
-                  <span className="flex items-center gap-1.5 text-xs text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                    Berjalan
-                  </span>
-                )}
-              </div>
+        </div>
 
-              <div className="flex-1 overflow-y-auto space-y-1 font-mono text-xs">
-                {state.logs.length === 0 ? (
-                  <p className="text-stone-600 italic text-center mt-20">
-                    Pilih area untuk memulai combat...
-                  </p>
-                ) : (
-                  state.logs.map((log) => (
-                    <div key={log.id} className={`leading-relaxed ${logColors[log.type]}`}>
-                      <span className="text-stone-600 mr-2">
-                        {log.timestamp.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                      </span>
-                      {log.message}
-                    </div>
-                  ))
-                )}
+        {/* ── CENTER: Arena + combat log ── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
+
+          {/* Arena */}
+          <div style={{
+            ...card, flex: 1,
+            background: "linear-gradient(180deg, #0d0d18 0%, #0a0a12 100%)",
+            border: "1px solid #2a2a3a",
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            position: "relative", overflow: "hidden", minHeight: "320px",
+          }}>
+
+            {/* Zone label */}
+            {state.currentAreaName && (
+              <div style={{
+                position: "absolute", top: "14px", left: "50%", transform: "translateX(-50%)",
+                fontSize: "11px", letterSpacing: "0.2em", color: "#4a4a5a",
+                background: "#111118", border: "1px solid #2a2a3a", borderRadius: "20px",
+                padding: "3px 14px",
+              }}>
+                {state.currentAreaName.toUpperCase()}
               </div>
+            )}
+
+            {/* VS display */}
+            {state.isActive && currentMonster ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "60px", width: "100%" }}>
+
+                {/* Player */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                  <div style={{
+                    width: "100px", height: "100px", borderRadius: "50%",
+                    background: "#1a1a28", border: "2px solid #2e2e44",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "54px",
+                    transform: attackAnim ? "translateX(12px)" : "translateX(0)",
+                    transition: "transform 0.15s ease-out",
+                    boxShadow: "0 0 30px rgba(245,158,11,0.15)",
+                  }}>
+                    {classData ? CLASS_ICONS[classData.id] : "⚔️"}
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "bold", color: "#f0ece0" }}>{character.name}</div>
+                    <MiniBar label="HP" value={character.hp} max={character.maxHp} pct={hpPct} color="#ef4444" />
+                  </div>
+                </div>
+
+                {/* VS */}
+                <div style={{ fontSize: "11px", letterSpacing: "0.2em", color: "#3a3a4a", fontWeight: "bold" }}>VS</div>
+
+                {/* Monster */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                  <div style={{
+                    width: "100px", height: "100px", borderRadius: "50%",
+                    background: "#1a0f0f", border: `2px solid ${currentMonster.color}44`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "54px",
+                    boxShadow: `0 0 30px ${currentMonster.color}22`,
+                    transition: "all 0.4s ease",
+                  }}>
+                    {currentMonster.emoji}
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "bold", color: currentMonster.color }}>{currentMonster.name}</div>
+                    <div style={{ fontSize: "10px", color: "#4a4a5a", marginTop: "2px" }}>Zone 1 · Delta Nil</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "48px", marginBottom: "12px", opacity: 0.3 }}>⚔️</div>
+                <div style={{ fontSize: "13px", color: "#3a3a4a", fontStyle: "italic" }}>Pilih area untuk mulai bertarung...</div>
+              </div>
+            )}
+
+            {/* Bottom glow */}
+            <div style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, height: "60px",
+              background: "linear-gradient(0deg, rgba(0,0,0,0.5), transparent)",
+              pointerEvents: "none",
+            }} />
+          </div>
+
+          {/* Combat Log — kecil, 5 baris */}
+          <div style={{ ...card, padding: "12px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span style={{ fontSize: "10px", letterSpacing: "0.15em", color: "#6b6b80", textTransform: "uppercase" }}>
+                Combat Log
+              </span>
+              {state.isActive && (
+                <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "#34d399" }}>
+                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#34d399", display: "inline-block", animation: "pulse 1.5s infinite" }} />
+                  Berjalan
+                </span>
+              )}
+            </div>
+
+            {/* Fixed height, 5 baris maks */}
+            <div style={{
+              height: "100px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "3px",
+            }}>
+              {state.logs.length === 0 ? (
+                <div style={{ color: "#3a3a4a", fontSize: "11px", fontStyle: "italic", padding: "4px 0" }}>
+                  Belum ada aktivitas...
+                </div>
+              ) : (
+                state.logs.slice(0, 20).map((log) => (
+                  <div key={log.id} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                    <span style={{ fontSize: "9px", color: "#3a3a4a", flexShrink: 0, marginTop: "1px", fontVariantNumeric: "tabular-nums" }}>
+                      {log.timestamp.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    </span>
+                    <span style={{ fontSize: "11px", color: LOG_COLORS[log.type] ?? "#c4bfb0", lineHeight: "1.4" }}>
+                      {log.message}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
         </div>
+
+      </main>
+
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    </div>
+  );
+}
+
+const card: React.CSSProperties = {
+  background: "#111118",
+  border: "1px solid #2a2a3a",
+  borderRadius: "12px",
+  padding: "16px",
+};
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontSize: "10px", letterSpacing: "0.15em", color: "#6b6b80",
+      textTransform: "uppercase", marginBottom: "10px",
+      paddingBottom: "8px", borderBottom: "1px solid #1e1e2e",
+    }}>{children}</div>
+  );
+}
+
+function MiniBar({ label, value, max, pct, color }: { label: string; value: number; max: number; pct: number; color: string }) {
+  return (
+    <div style={{ marginTop: "4px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#6b6b80", marginBottom: "3px" }}>
+        <span>{label}</span><span style={{ color }}>{value}/{max}</span>
+      </div>
+      <div style={{ height: "4px", background: "#1a1a28", borderRadius: "2px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "2px", transition: "width 0.5s" }} />
       </div>
     </div>
   );
