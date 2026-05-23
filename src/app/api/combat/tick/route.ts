@@ -94,6 +94,18 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Recalculate character overall level from total skill levels
+      const allSkills = await tx.characterSkill.findMany({
+        where: { characterId: character.id },
+      });
+      const totalSkillLevels = allSkills.reduce((sum, s) => sum + s.level, 0);
+      const newCharLevel = Math.max(1, Math.floor(totalSkillLevels / allSkills.length));
+
+      await tx.character.update({
+        where: { id: character.id },
+        data: { level: newCharLevel },
+      });
+
       // Update skill exp + level up if needed
       for (const [skillId, expGain] of Object.entries(skillExpGains)) {
         const skill = character.skills.find((s) => s.skillId === skillId);
@@ -113,6 +125,29 @@ export async function POST(req: NextRequest) {
           where: { characterId_skillId: { characterId: character.id, skillId } },
           data: { experience: newExp, level: newLevel },
         });
+
+        // Update character stat setiap level naik
+        if (newLevel > skill.level) {
+          const levelsGained = newLevel - skill.level;
+          if (skillId === "melee") {
+            await tx.character.update({
+              where: { id: character.id },
+              data: {
+                str: { increment: 2 * levelsGained },
+                maxHp: { increment: 1 * levelsGained },
+              },
+            });
+          }
+          if (skillId === "defense") {
+            await tx.character.update({
+              where: { id: character.id },
+              data: {
+                vit: { increment: 1 * levelsGained },
+                maxHp: { increment: 2 * levelsGained },
+              },
+            });
+          }
+        }
       }
 
       // Add loot to inventory

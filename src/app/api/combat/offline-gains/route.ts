@@ -59,6 +59,18 @@ export async function POST() {
         },
       });
 
+      // Recalculate character overall level from total skill levels
+      const allSkills = await tx.characterSkill.findMany({
+        where: { characterId: character.id },
+      });
+      const totalSkillLevels = allSkills.reduce((sum, s) => sum + s.level, 0);
+      const newCharLevel = Math.max(1, Math.floor(totalSkillLevels / allSkills.length));
+
+      await tx.character.update({
+        where: { id: character.id },
+        data: { level: newCharLevel },
+      });
+
       // Skill exp gains
       const meleeExpGain = Math.floor(gains.expGained * 0.6);
       const defenseExpGain = Math.floor(gains.expGained * 0.2);
@@ -81,6 +93,29 @@ export async function POST() {
           data: { experience: newExp, level: newLevel },
         });
       }
+
+      // Apply stat gains from level ups
+        const meleeGained = gains.skillLevelsGained["melee"] ?? 0;
+        const defenseGained = gains.skillLevelsGained["defense"] ?? 0;
+
+        if (meleeGained > 0) {
+        await tx.character.update({
+            where: { id: character.id },
+            data: {
+            str: { increment: 2 * meleeGained },
+            maxHp: { increment: 1 * meleeGained },
+            },
+        });
+        }
+        if (defenseGained > 0) {
+        await tx.character.update({
+            where: { id: character.id },
+            data: {
+            vit: { increment: 1 * defenseGained },
+            maxHp: { increment: 2 * defenseGained },
+            },
+        });
+        }
 
       // Add loot to inventory
       for (const [itemId, quantity] of Object.entries(gains.loot)) {
