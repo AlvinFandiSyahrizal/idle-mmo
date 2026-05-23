@@ -121,6 +121,23 @@ export async function POST(req: NextRequest) {
           logs.push(`🎉 Melee naik ke Level ${newLevel}!`);
         }
 
+        if (newLevel > skill.level) {
+  const levelsGained = newLevel - skill.level;
+
+  // Milestone: tiap kelipatan 10 level dapat 1 attribute point
+  const oldMilestones = Math.floor(skill.level / 10);
+  const newMilestones = Math.floor(newLevel / 10);
+  const milestoneCount = newMilestones - oldMilestones;
+
+  if (milestoneCount > 0) {
+    await tx.character.update({
+      where: { id: character.id },
+      data: { attributePoints: { increment: milestoneCount } },
+    });
+    logs.push(`🎯 Milestone! +${milestoneCount} Attribute Point`);
+  }
+}
+
         await tx.characterSkill.update({
           where: { characterId_skillId: { characterId: character.id, skillId } },
           data: { experience: newExp, level: newLevel },
