@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-interface CombatLog {
-  id: number;
+export interface CombatLog {
+  id: string;
   message: string;
   type: "combat" | "loot" | "levelup" | "death" | "system";
   timestamp: Date;
@@ -19,7 +19,7 @@ interface CombatState {
   };
 }
 
-const TICK_INTERVAL = 3000; // 3 detik per tick
+const TICK_INTERVAL = 3000;
 
 export function useCombat(onStatsUpdate?: () => void) {
   const [state, setState] = useState<CombatState>({
@@ -31,16 +31,23 @@ export function useCombat(onStatsUpdate?: () => void) {
   });
 
   const tickRef = useRef<NodeJS.Timeout | null>(null);
-  const logIdRef = useRef(0);
+  const counterRef = useRef(0);
+
+  function makeId(): string {
+    counterRef.current += 1;
+    return `log_${Date.now()}_${counterRef.current}`;
+  }
 
   function addLog(message: string, type: CombatLog["type"] = "combat") {
-    logIdRef.current += 1;
+    const entry: CombatLog = {
+      id: makeId(),
+      message,
+      type,
+      timestamp: new Date(),
+    };
     setState((prev) => ({
       ...prev,
-      logs: [
-        { id: logIdRef.current, message, type, timestamp: new Date() },
-        ...prev.logs.slice(0, 49), // keep last 50
-      ],
+      logs: [entry, ...prev.logs.slice(0, 49)],
     }));
   }
 
@@ -50,22 +57,29 @@ export function useCombat(onStatsUpdate?: () => void) {
       const data = await res.json();
       if (!data.success) return;
 
-      const { playerDied, logs, expGained, goldGained, loot, monsterName } = data.data;
+      const { playerDied, logs, expGained, goldGained, monsterName } = data.data;
 
-      logs?.forEach((log: string) => {
-        const type = log.includes("🎉")
-          ? "levelup"
-          : log.includes("dikalahkan")
-          ? "death"
-          : log.includes("Drop:")
-          ? "loot"
-          : "combat";
-        addLog(log, type);
-      });
+      if (logs?.length) {
+        logs.forEach((msg: string, i: number) => {
+          setTimeout(() => {
+            const type: CombatLog["type"] =
+              msg.includes("🎉") ? "levelup"
+              : msg.includes("dikalahkan oleh") ? "death"
+              : msg.includes("Drop:") ? "loot"
+              : "combat";
+            addLog(msg, type);
+          }, i * 10);
+        });
+      }
 
       if (playerDied) {
-        addLog("💀 Kamu pingsan! Combat dihentikan otomatis.", "death");
-        setState((prev) => ({ ...prev, isActive: false, currentAreaId: null }));
+        setTimeout(() => addLog("💀 Kamu pingsan! Combat dihentikan.", "death"), (logs?.length ?? 0) * 10 + 20);
+        setState((prev) => ({
+          ...prev,
+          isActive: false,
+          currentAreaId: null,
+          currentAreaName: null,
+        }));
         if (tickRef.current) clearInterval(tickRef.current);
         onStatsUpdate?.();
         return;
@@ -114,7 +128,12 @@ export function useCombat(onStatsUpdate?: () => void) {
   async function stopCombat() {
     if (tickRef.current) clearInterval(tickRef.current);
     await fetch("/api/combat/stop", { method: "POST" });
-    setState((prev) => ({ ...prev, isActive: false, currentAreaId: null, currentAreaName: null }));
+    setState((prev) => ({
+      ...prev,
+      isActive: false,
+      currentAreaId: null,
+      currentAreaName: null,
+    }));
     addLog("🛑 Combat dihentikan.", "system");
     onStatsUpdate?.();
   }
