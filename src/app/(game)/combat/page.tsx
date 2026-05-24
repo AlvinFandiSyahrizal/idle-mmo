@@ -15,6 +15,7 @@ const LOG_COLORS: Record<string, string> = {
 };
 
 const AREA_MONSTERS: Record<string, { name: string; emoji: string; color: string }[]> = {
+  // Zone 1
   area1_1: [
     { name: "Crocodile Hatchling", emoji: "🐊", color: "#16a34a" },
     { name: "Reed Sprite", emoji: "🌿", color: "#15803d" },
@@ -30,6 +31,74 @@ const AREA_MONSTERS: Record<string, { name: string; emoji: string; color: string
   area1_4: [
     { name: "Sobek Cultist", emoji: "🐍", color: "#b45309" },
     { name: "Alpha Crocodile", emoji: "🐊", color: "#dc2626" },
+  ],
+  // Zone 2
+  area2_1: [
+    { name: "Sand Scarab", emoji: "🪲", color: "#d97706" },
+    { name: "Desert Wanderer", emoji: "🧟", color: "#92400e" },
+  ],
+  area2_2: [
+    { name: "Desert Wraith", emoji: "👻", color: "#7c3aed" },
+    { name: "Sand Scarab", emoji: "🪲", color: "#d97706" },
+  ],
+  area2_3: [
+    { name: "Cursed Palm", emoji: "🌴", color: "#15803d" },
+    { name: "Desiccated Warrior", emoji: "💀", color: "#78716c" },
+  ],
+  area2_4: [
+    { name: "Apep Cultist", emoji: "🐍", color: "#6d28d9" },
+    { name: "Void Serpent", emoji: "🌑", color: "#1e1b4b" },
+  ],
+  // Zone 3
+  area3_1: [
+    { name: "Restless Mummy", emoji: "🧟", color: "#d97706" },
+    { name: "Ka Spirit", emoji: "👻", color: "#818cf8" },
+  ],
+  area3_2: [
+    { name: "Ushabti Golem", emoji: "🗿", color: "#78716c" },
+    { name: "Tomb Guardian", emoji: "⚔️", color: "#92400e" },
+  ],
+  area3_3: [
+    { name: "Judgment Shade", emoji: "⚖️", color: "#6b21a8" },
+    { name: "Cursed Priest", emoji: "🧙", color: "#7c3aed" },
+  ],
+  area3_4: [
+    { name: "Soul Eater", emoji: "💀", color: "#dc2626" },
+    { name: "Ammit Spawn", emoji: "🦁", color: "#991b1b" },
+  ],
+  // Zone 4
+  area4_1: [
+    { name: "Corrupted Priest", emoji: "🧙", color: "#7c3aed" },
+    { name: "Stone Guardian", emoji: "🗿", color: "#57534e" },
+  ],
+  area4_2: [
+    { name: "Curse Scarab", emoji: "🪲", color: "#6d28d9" },
+    { name: "Dark Acolyte", emoji: "🌑", color: "#1e1b4b" },
+  ],
+  area4_3: [
+    { name: "Set Cultist", emoji: "😈", color: "#b91c1c" },
+    { name: "Shadow Sentinel", emoji: "👁️", color: "#374151" },
+  ],
+  area4_4: [
+    { name: "Set Champion Guard", emoji: "⚔️", color: "#dc2626" },
+    { name: "Chaos Elemental", emoji: "🌀", color: "#7c3aed" },
+  ],
+  // Zone 5
+  area5_1: [
+    { name: "Mud Golem", emoji: "🪨", color: "#92400e" },
+    { name: "River Demon", emoji: "😈", color: "#1d4ed8" },
+  ],
+  area5_2: [
+    { name: "Marsh Stalker", emoji: "👁️", color: "#166534" },
+    { name: "Swamp Horror", emoji: "👾", color: "#14532d" },
+  ],
+  area5_3: [
+    { name: "Forest Guardian", emoji: "🌲", color: "#15803d" },
+    { name: "Ancient Treant", emoji: "🌳", color: "#166534" },
+  ],
+  area5_4: [
+    { name: "Humbaba Servant", emoji: "👹", color: "#b45309" },
+    { name: "Wild Lion", emoji: "🦁", color: "#d97706" },
   ],
 };
 
