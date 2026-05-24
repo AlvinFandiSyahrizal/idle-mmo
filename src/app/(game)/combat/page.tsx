@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCombat } from "@/hooks/useCombat";
+import { useCombatStore } from "@/stores/combatStore";
 import { getAvailableAreas } from "@/data/zones";
 import { CHARACTER_CLASSES, CLASS_ICONS } from "@/data/characters";
 import GameSidebar from "@/components/layout/GameSidebar";
@@ -121,14 +121,23 @@ export default function CombatPage() {
     setTimeout(() => setAttackAnim(false), 300);
   }
 
-  const { state, startCombat, stopCombat } = useCombat(handleStatsUpdate);
+  const { isActive, currentAreaId, currentAreaName, logs, stats, startCombat, stopCombat } = useCombatStore();
+
+  // Wrap startCombat dan stopCombat dengan handleStatsUpdate
+  async function handleStart(areaId: string, areaName: string) {
+    await startCombat(areaId, areaName, handleStatsUpdate);
+  }
+
+  async function handleStop() {
+    await stopCombat(handleStatsUpdate);
+  }
 
   useEffect(() => {
-    if (!state.isActive || !state.currentAreaId) {
+    if (!isActive || !currentAreaId) {
       setCurrentMonster(null);
       return;
     }
-    const monsters = AREA_MONSTERS[state.currentAreaId] ?? [];
+    const monsters = AREA_MONSTERS[currentAreaId] ?? [];
     if (!monsters.length) return;
     function pickRandom() {
       setCurrentMonster(monsters[Math.floor(Math.random() * monsters.length)]);
@@ -136,7 +145,7 @@ export default function CombatPage() {
     pickRandom();
     const iv = setInterval(pickRandom, 3500);
     return () => clearInterval(iv);
-  }, [state.isActive, state.currentAreaId]);
+  }, [isActive, currentAreaId]);
 
   useEffect(() => { fetchCharacter(); }, []);
 
@@ -193,13 +202,13 @@ export default function CombatPage() {
             </div>
 
             {/* Session stats */}
-            {state.isActive && (
+            {isActive && (
               <div style={card}>
                 <Label>Sesi Ini</Label>
                 {[
-                  { label: "Kill", val: state.stats.killCount, color: "#c4bfb0" },
-                  { label: "EXP", val: `+${state.stats.totalExp}`, color: "#34d399" },
-                  { label: "Gold", val: `+${state.stats.totalGold}`, color: "#f59e0b" },
+                  { label: "Kill", val: stats.killCount, color: "#c4bfb0" },
+                  { label: "EXP", val: `+${stats.totalExp}`, color: "#34d399" },
+                  { label: "Gold", val: `+${stats.totalGold}`, color: "#f59e0b" },
                 ].map((s) => (
                   <div key={s.label} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1a1a28" }}>
                     <span style={{ fontSize: "11px", color: "#6b6b80" }}>{s.label}</span>
@@ -214,12 +223,12 @@ export default function CombatPage() {
   <Label>Area Farming</Label>
   <ZoneAreaList
     availableAreas={availableAreas}
-    currentAreaId={state.currentAreaId}
-    onSelectArea={(areaId, areaName) => startCombat(areaId, areaName)}
-    onStop={stopCombat}
-    isActive={state.isActive}
+    currentAreaId={currentAreaId}
+    onSelectArea={(areaId, areaName) => handleStart(areaId, areaName)}
+    onStop={handleStop}
+    isActive={isActive}
   />
-  {state.isActive && (
+  {isActive && (
     <button
       onClick={stopCombat}
       style={{
@@ -248,18 +257,18 @@ export default function CombatPage() {
               alignItems: "center", justifyContent: "center",
               position: "relative", overflow: "hidden", minHeight: "300px",
             }}>
-              {state.currentAreaName && (
+              {currentAreaName && (
                 <div style={{
                   position: "absolute", top: "14px", left: "50%", transform: "translateX(-50%)",
                   fontSize: "10px", letterSpacing: "0.2em", color: "#4a4a5a",
                   background: "#111118", border: "1px solid #2a2a3a",
                   borderRadius: "20px", padding: "3px 14px", whiteSpace: "nowrap",
                 }}>
-                  {state.currentAreaName.toUpperCase()}
+                  {currentAreaName.toUpperCase()}
                 </div>
               )}
 
-              {state.isActive && currentMonster ? (
+              {isActive && currentMonster ? (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "50px", width: "100%", padding: "0 20px" }}>
 
                   {/* Player */}
@@ -334,7 +343,7 @@ export default function CombatPage() {
                 <span style={{ fontSize: "10px", letterSpacing: "0.15em", color: "#6b6b80", textTransform: "uppercase" }}>
                   Combat Log
                 </span>
-                {state.isActive && (
+                {isActive && (
                   <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "#34d399" }}>
                     <span style={{
                       width: "6px", height: "6px", borderRadius: "50%",
@@ -353,12 +362,12 @@ export default function CombatPage() {
                 flexDirection: "column",
                 gap: "3px",
               }}>
-                {state.logs.length === 0 ? (
+                {logs.length === 0 ? (
                   <div style={{ color: "#3a3a4a", fontSize: "11px", fontStyle: "italic" }}>
                     Belum ada aktivitas...
                   </div>
                 ) : (
-                  state.logs.slice(0, 20).map((log) => (
+                  logs.slice(0, 20).map((log) => (
                     <div key={log.id} style={{ display: "flex", gap: "8px", alignItems: "flex-start", flexShrink: 0 }}>
                       <span style={{ fontSize: "9px", color: "#3a3a4a", flexShrink: 0, marginTop: "1px" }}>
                         {log.timestamp.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}

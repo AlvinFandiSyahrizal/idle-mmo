@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { CHARACTER_CLASSES, CLASS_ICONS } from "@/data/characters";
+import { useCombatStore } from "@/stores/combatStore";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "⚱" },
@@ -25,6 +26,7 @@ export default function GameSidebar({ character }: Props) {
   const [open, setOpen] = useState(false);
   const classData = CHARACTER_CLASSES.find((c) => c.id === character?.classId);
   const hpPct = character ? Math.round((character.hp / character.maxHp) * 100) : 0;
+  const { isActive, currentAreaName } = useCombatStore();
 
   const sidebarContent = (
     <aside
@@ -72,29 +74,50 @@ export default function GameSidebar({ character }: Props) {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: "10px 8px" }}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              style={{
-                display: "flex", alignItems: "center", gap: "9px",
-                padding: "9px 12px", borderRadius: "8px", marginBottom: "2px",
-                textDecoration: "none",
-                background: isActive ? "rgba(245,158,11,0.1)" : "transparent",
-                border: isActive ? "1px solid rgba(245,158,11,0.2)" : "1px solid transparent",
-                color: isActive ? "#f59e0b" : "#8a8a9a",
-                fontSize: "13px", fontFamily: "Georgia, serif",
-                transition: "all 0.2s",
-              }}
-            >
-              <span style={{ fontSize: "15px" }}>{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
+      {NAV_ITEMS.map((item) => {
+        const isActivePage = pathname === item.href;
+        const isCombatItem = item.href === "/combat";
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => setOpen(false)}
+            style={{
+              display: "flex", alignItems: "center", gap: "9px",
+              padding: "9px 12px", borderRadius: "8px", marginBottom: "2px",
+              textDecoration: "none",
+              background: isActivePage ? "rgba(245,158,11,0.1)" : "transparent",
+              border: isActivePage ? "1px solid rgba(245,158,11,0.2)" : "1px solid transparent",
+              color: isActivePage ? "#f59e0b" : "#8a8a9a",
+              fontSize: "13px", fontFamily: "Georgia, serif",
+              transition: "all 0.2s",
+            }}
+          >
+            <span style={{ fontSize: "15px" }}>{item.icon}</span>
+            <span style={{ flex: 1 }}>{item.label}</span>
+            {isCombatItem && isActive && (
+              <span style={{
+                width: "7px", height: "7px", borderRadius: "50%",
+                background: "#22c55e", flexShrink: 0,
+                boxShadow: "0 0 6px #22c55e",
+                animation: "pulse 1.5s infinite",
+              }} />
+            )}
+          </Link>
+        );
+      })}
+
+      {isActive && currentAreaName && (
+        <div style={{
+          marginTop: "-6px", marginBottom: "4px",
+          padding: "3px 12px",
+          fontSize: "9px", color: "#22c55e",
+          letterSpacing: "0.05em",
+        }}>
+          ↳ {currentAreaName}
+        </div>
+      )}
+
       </nav>
 
       {/* Sign out */}
