@@ -209,55 +209,30 @@ export default function CombatPage() {
               </div>
             )}
 
-            {/* Area list */}
-            <div style={card}>
-              <Label>Area Farming</Label>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                {availableAreas.map(({ area, zone }) => {
-                  const isActive = state.currentAreaId === area.id;
-                  return (
-                    <button
-                      key={area.id}
-                      onClick={() => isActive ? stopCombat() : startCombat(area.id, area.name)}
-                      style={{
-                        textAlign: "left", padding: "9px 10px", borderRadius: "7px",
-                        background: isActive ? "rgba(220,38,38,0.1)" : "#0f0f1a",
-                        outline: isActive ? "1px solid rgba(220,38,38,0.3)" : "1px solid #1e1e2e",
-                        border: "none", cursor: "pointer", transition: "all 0.2s",
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: "12px", fontWeight: "bold", color: isActive ? "#fca5a5" : "#c4bfb0", fontFamily: "Georgia, serif" }}>
-                          {area.name}
-                        </span>
-                        {isActive && (
-                          <span style={{ fontSize: "9px", color: "#ef4444", background: "rgba(220,38,38,0.2)", borderRadius: "3px", padding: "1px 5px" }}>
-                            AKTIF
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: "10px", color: "#4a4a5a", marginTop: "1px", fontFamily: "Georgia, serif" }}>
-                        {zone.name} · Lv {area.minCombatLevel}+
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {state.isActive && (
-                <button
-                  onClick={stopCombat}
-                  style={{
-                    marginTop: "8px", width: "100%", padding: "8px", borderRadius: "7px",
-                    background: "rgba(220,38,38,0.08)", border: "1px solid #3a2020",
-                    color: "#ef4444", fontSize: "12px", fontFamily: "Georgia, serif",
-                    cursor: "pointer", fontWeight: "bold",
-                  }}
-                >
-                  🛑 Hentikan
-                </button>
-              )}
-            </div>
+{/* Area list */}
+<div style={card}>
+  <Label>Area Farming</Label>
+  <ZoneAreaList
+    availableAreas={availableAreas}
+    currentAreaId={state.currentAreaId}
+    onSelectArea={(areaId, areaName) => startCombat(areaId, areaName)}
+    onStop={stopCombat}
+    isActive={state.isActive}
+  />
+  {state.isActive && (
+    <button
+      onClick={stopCombat}
+      style={{
+        marginTop: "8px", width: "100%", padding: "8px", borderRadius: "7px",
+        background: "rgba(220,38,38,0.08)", border: "1px solid #3a2020",
+        color: "#ef4444", fontSize: "12px", fontFamily: "Georgia, serif",
+        cursor: "pointer", fontWeight: "bold",
+      }}
+    >
+      🛑 Hentikan
+    </button>
+  )}
+</div>
 
           </div>
 
@@ -414,6 +389,132 @@ export default function CombatPage() {
     </div>
   );
 }
+
+
+const ZONE_INFO: Record<string, { name: string; alignment: string; color: string; icon: string }> = {
+  zone1: { name: "Delta Nil", alignment: "egypt", color: "#d97706", icon: "🌊" },
+  zone2: { name: "Padang Pasir Barat", alignment: "egypt", color: "#f59e0b", icon: "🏜️" },
+  zone3: { name: "Nekropolis", alignment: "egypt", color: "#7c3aed", icon: "💀" },
+  zone4: { name: "Kuil Karnak", alignment: "egypt", color: "#dc2626", icon: "🏛️" },
+  zone5: { name: "Lembah Eufrat", alignment: "mesopotamia", color: "#3b82f6", icon: "🌿" },
+};
+
+function ZoneAreaList({
+  availableAreas,
+  currentAreaId,
+  onSelectArea,
+  onStop,
+  isActive,
+}: {
+  availableAreas: { area: any; zone: any }[];
+  currentAreaId: string | null;
+  onSelectArea: (id: string, name: string) => void;
+  onStop: () => void;
+  isActive: boolean;
+}) {
+  // Group areas by zone
+  const grouped: Record<string, { area: any; zone: any }[]> = {};
+  for (const item of availableAreas) {
+    const zid = item.zone.id;
+    if (!grouped[zid]) grouped[zid] = [];
+    grouped[zid].push(item);
+  }
+
+  // Track which zones are expanded — default expand zone of active area
+  const defaultOpen = currentAreaId
+    ? availableAreas.find((a) => a.area.id === currentAreaId)?.zone.id
+    : Object.keys(grouped)[0];
+
+  const [openZone, setOpenZone] = useState<string | null>(defaultOpen ?? null);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      {Object.entries(grouped).map(([zoneId, items]) => {
+        const zinfo = ZONE_INFO[zoneId] ?? { name: zoneId, color: "#6b6b80", icon: "🗺️" };
+        const isOpen = openZone === zoneId;
+        const hasActive = items.some((i) => i.area.id === currentAreaId);
+
+        return (
+          <div key={zoneId} style={{
+            border: `1px solid ${hasActive ? zinfo.color + "44" : "#1e1e2e"}`,
+            borderRadius: "9px",
+            overflow: "hidden",
+            background: hasActive ? `${zinfo.color}08` : "transparent",
+          }}>
+            {/* Zone header — clickable */}
+            <button
+              onClick={() => setOpenZone(isOpen ? null : zoneId)}
+              style={{
+                width: "100%", textAlign: "left",
+                padding: "8px 10px", border: "none", cursor: "pointer",
+                background: "transparent",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "13px" }}>{zinfo.icon}</span>
+                <span style={{ fontSize: "11px", fontWeight: "bold", color: hasActive ? zinfo.color : "#8a8a9a", fontFamily: "Georgia, serif" }}>
+                  {zinfo.name}
+                </span>
+                {hasActive && (
+                  <span style={{ fontSize: "8px", color: zinfo.color, background: `${zinfo.color}22`, borderRadius: "3px", padding: "1px 4px" }}>
+                    AKTIF
+                  </span>
+                )}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                <span style={{ fontSize: "9px", color: "#4a4a5a" }}>
+                  {items.length} area
+                </span>
+                <span style={{ fontSize: "10px", color: "#4a4a5a", transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                  ▼
+                </span>
+              </div>
+            </button>
+
+            {/* Area list inside zone */}
+            {isOpen && (
+              <div style={{ padding: "0 6px 6px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                {items.map(({ area }) => {
+                  const isAreaActive = currentAreaId === area.id;
+                  return (
+                    <button
+                      key={area.id}
+                      onClick={() => isAreaActive ? onStop() : onSelectArea(area.id, area.name)}
+                      style={{
+                        textAlign: "left", padding: "8px 10px", borderRadius: "6px",
+                        background: isAreaActive ? `${zinfo.color}18` : "#0f0f1a",
+                        outline: isAreaActive ? `1px solid ${zinfo.color}44` : "1px solid #1a1a28",
+                        border: "none", cursor: "pointer", transition: "all 0.15s",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontSize: "11px", fontWeight: "bold", color: isAreaActive ? zinfo.color : "#c4bfb0", fontFamily: "Georgia, serif" }}>
+                            {area.name}
+                          </div>
+                          <div style={{ fontSize: "9px", color: "#4a4a5a", marginTop: "1px" }}>
+                            Min Melee Lv {area.minCombatLevel}
+                          </div>
+                        </div>
+                        {isAreaActive && (
+                          <span style={{ fontSize: "8px", color: "#ef4444", background: "rgba(220,38,38,0.2)", borderRadius: "3px", padding: "1px 5px" }}>
+                            ● AKTIF
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 const card: React.CSSProperties = {
   background: "#111118",
