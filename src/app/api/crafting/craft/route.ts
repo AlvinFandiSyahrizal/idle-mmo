@@ -109,6 +109,27 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // Track crafting quest progress
+    const freshChar2 = await prisma.character.findUnique({
+      where: { id: character.id },
+      include: { questProgress: true },
+    });
+
+    for (const prog of freshChar2?.questProgress ?? []) {
+      if (prog.completed || prog.resetAt <= new Date()) continue;
+      if (prog.questId === "daily_craft_3" || prog.questId === "weekly_craft_15") {
+        const { DAILY_QUESTS, WEEKLY_QUESTS } = await import("@/data/quests/daily_quests");
+        const questDef = [...DAILY_QUESTS, ...WEEKLY_QUESTS].find((q) => q.id === prog.questId);
+        if (questDef) {
+          const newProgress = Math.min(prog.progress + 1, questDef.objective.target);
+          await prisma.questProgress.update({
+            where: { id: prog.id },
+            data: { progress: newProgress, completed: newProgress >= questDef.objective.target },
+          });
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {

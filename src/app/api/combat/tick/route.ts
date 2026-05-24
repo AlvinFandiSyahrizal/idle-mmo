@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
+
       // Recalculate character overall level from total skill levels
       const allSkills = await tx.characterSkill.findMany({
         where: { characterId: character.id },
@@ -184,6 +185,47 @@ export async function POST(req: NextRequest) {
         }
       }
     });
+
+      // Update quest progress setelah transaction
+    if (totalExp > 0) {
+      const freshChar = await prisma.character.findUnique({
+        where: { id: character.id },
+        include: { questProgress: true },
+      });
+
+      const killCount = Object.keys(allLoot).length > 0 || totalExp > 0 ? 1 : 0;
+
+      for (const prog of freshChar?.questProgress ?? []) {
+        if (prog.completed || prog.resetAt <= new Date()) continue;
+
+        let increment = 0;
+
+        if (prog.questId === "daily_kill_50" || prog.questId === "daily_kill_100" || prog.questId === "weekly_kill_500") {
+          increment = killCount;
+        } else if (prog.questId === "daily_earn_gold" || prog.questId === "weekly_earn_5000") {
+          increment = totalGold;
+        } else if (prog.questId.includes("farm_area")) {
+          increment = killCount;
+        }
+
+        if (increment > 0) {
+          const questDef = [...(await import("@/data/quests/daily_quests")).DAILY_QUESTS,
+            ...(await import("@/data/quests/daily_quests")).WEEKLY_QUESTS]
+            .find((q) => q.id === prog.questId);
+
+          if (questDef) {
+            const newProgress = Math.min(prog.progress + increment, questDef.objective.target);
+            await prisma.questProgress.update({
+              where: { id: prog.id },
+              data: {
+                progress: newProgress,
+                completed: newProgress >= questDef.objective.target,
+              },
+            });
+          }
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

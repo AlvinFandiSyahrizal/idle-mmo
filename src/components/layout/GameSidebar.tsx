@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/inventory", label: "Inventory", icon: "🎒" },
   { href: "/skills", label: "Skills", icon: "📊" },
   { href: "/crafting", label: "Crafting", icon: "🔨" },
+  { href: "/quests", label: "Quests", icon: "📋" },
   { href: "/guild", label: "Guild", icon: "🏛️" },
 ];
 
