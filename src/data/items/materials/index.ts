@@ -53,6 +53,27 @@ export const MATERIALS: ItemDefinition[] = [
   { id: "copper_ore", name: "Copper Ore", type: "material", tier: "common", description: "Bijih tembaga dari tanah Sumeria.", sellPrice: 15 },
   { id: "lion_pelt", name: "Lion Pelt", type: "material", tier: "uncommon", description: "Kulit singa padang Mesopotamia.", sellPrice: 70 },
   { id: "lion_claw", name: "Lion Claw", type: "material", tier: "uncommon", description: "Cakar singa yang tajam.", sellPrice: 55 },
+
+  // Consumables
+  { id: "health_potion_small", name: "Small Health Potion", type: "consumable", tier: "common", description: "Memulihkan 50 HP.", sellPrice: 18 },
+  { id: "health_potion_medium", name: "Medium Health Potion", type: "consumable", tier: "uncommon", description: "Memulihkan 150 HP.", sellPrice: 55 },
+  { id: "antidote", name: "Antidote", type: "consumable", tier: "common", description: "Menetralkan racun.", sellPrice: 22 },
+  { id: "strength_elixir", name: "Strength Elixir", type: "consumable", tier: "uncommon", description: "+10 STR selama 5 menit.", sellPrice: 80 },
+  { id: "soul_tonic", name: "Soul Tonic", type: "consumable", tier: "uncommon", description: "Memulihkan 80 MP.", sellPrice: 45 },
+  { id: "offering_incense", name: "Offering Incense", type: "consumable", tier: "common", description: "Dupa persembahan ritual.", sellPrice: 20 },
+  // Crafted weapons
+  { id: "bronze_khopesh", name: "Bronze Khopesh", type: "weapon", tier: "common", description: "Pedang melengkung khas Mesir.", sellPrice: 85, stats: { damage: 18, str: 2 } },
+  { id: "iron_spear", name: "Iron Spear", type: "weapon", tier: "common", description: "Tombak besi panjang.", sellPrice: 120, stats: { damage: 25, str: 3 } },
+  { id: "copper_bow", name: "Copper Bow", type: "weapon", tier: "common", description: "Busur tembaga ringan.", sellPrice: 100, stats: { damage: 22, agi: 3 } },
+  { id: "electrum_blade", name: "Electrum Blade", type: "weapon", tier: "rare", description: "Pedang elektrum mewah.", sellPrice: 580, stats: { damage: 65, str: 8 } },
+  { id: "lapis_staff", name: "Lapis Staff", type: "weapon", tier: "rare", description: "Tongkat lapis lazuli.", sellPrice: 520, stats: { damage: 58, int_stat: 10 } },
+  // Crafted armors
+  { id: "linen_robe", name: "Linen Robe", type: "chest", tier: "common", description: "Jubah linen ringan.", sellPrice: 45, stats: { defense: 8 } },
+  { id: "hide_armor", name: "Hide Armor", type: "chest", tier: "common", description: "Baju zirah kulit.", sellPrice: 75, stats: { defense: 14, vit: 2 } },
+  { id: "bronze_chestplate", name: "Bronze Chestplate", type: "chest", tier: "uncommon", description: "Baju besi perunggu.", sellPrice: 180, stats: { defense: 28, vit: 4 } },
+  { id: "crocodile_shield", name: "Crocodile Scale Shield", type: "accessory", tier: "uncommon", description: "Perisai sisik buaya.", sellPrice: 200, stats: { defense: 22, vit: 3 } },
+  // Crafted materials
+  { id: "basic_combat_rune", name: "Basic Combat Rune", type: "material", tier: "common", description: "Rune dasar untuk meningkatkan serangan.", sellPrice: 30 },
 ];
 
 export const MATERIAL_MAP = Object.fromEntries(MATERIALS.map((m) => [m.id, m]));
