@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import GameSidebar from "@/components/layout/GameSidebar";
+import { ITEM_SOURCES } from "@/data/items/items/sources";
 
 const CATEGORY_TABS = [
   { id: "all", label: "Semua" },
@@ -35,6 +36,7 @@ export default function CraftingPage() {
   const [selected, setSelected] = useState<any>(null);
   const [crafting, setCrafting] = useState(false);
   const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [sourcePopup, setSourcePopup] = useState<{ itemId: string; itemName: string; x: number; y: number } | null>(null);
 
   const fetchData = useCallback(async () => {
     const [charRes, craftRes] = await Promise.all([
@@ -286,23 +288,66 @@ export default function CraftingPage() {
                   BAHAN YANG DIBUTUHKAN
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                  {selected.ingredientsDetail.map((ing: any) => (
-                    <div key={ing.itemId} style={{
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                      background: "#0f0f1a", borderRadius: "7px", padding: "7px 10px",
-                      border: `1px solid ${ing.enough ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)"}`,
-                    }}>
-                      <span style={{ fontSize: "12px", color: ing.enough ? "#c4bfb0" : "#f87171" }}>
-                        {ing.name}
-                      </span>
-                      <span style={{
-                        fontSize: "12px", fontWeight: "bold",
-                        color: ing.enough ? "#4ade80" : "#ef4444",
-                      }}>
-                        {ing.owned} / {ing.required}
-                      </span>
-                    </div>
-                  ))}
+{selected.ingredientsDetail.map((ing: any) => {
+  const sources = ITEM_SOURCES[ing.itemId] ?? [];
+  return (
+    <div key={ing.itemId} style={{ position: "relative" }}>
+      <button
+        onClick={() => setSourcePopup(
+          sourcePopup?.itemId === ing.itemId ? null :
+          { itemId: ing.itemId, itemName: ing.name, x: 0, y: 0 }
+        )}
+        style={{
+          width: "100%", textAlign: "left",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          background: "#0f0f1a", borderRadius: "7px", padding: "7px 10px",
+          border: `1px solid ${ing.enough ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)"}`,
+          cursor: sources.length > 0 ? "pointer" : "default",
+        }}
+      >
+        <span style={{ fontSize: "12px", color: ing.enough ? "#c4bfb0" : "#f87171" }}>
+          {ing.name}
+          {sources.length > 0 && <span style={{ fontSize: "9px", color: "#4a4a5a", marginLeft: "4px" }}>📍</span>}
+        </span>
+        <span style={{ fontSize: "12px", fontWeight: "bold", color: ing.enough ? "#4ade80" : "#ef4444" }}>
+          {ing.owned} / {ing.required}
+        </span>
+      </button>
+
+      {/* Source popup */}
+      {sourcePopup?.itemId === ing.itemId && (
+        <div style={{
+          position: "absolute", bottom: "calc(100% + 6px)", left: 0, right: 0,
+          background: "#1a1a28", border: "1px solid #2a2a3a",
+          borderRadius: "8px", padding: "10px", zIndex: 10,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+        }}>
+          <div style={{ fontSize: "10px", color: "#6b6b80", marginBottom: "6px" }}>
+            📍 Drop dari:
+          </div>
+          {sources.length === 0 ? (
+            <div style={{ fontSize: "11px", color: "#4a4a5a", fontStyle: "italic" }}>
+              Info area belum tersedia
+            </div>
+          ) : (
+            sources.map((src) => (
+              <div key={src.areaId} style={{
+                fontSize: "11px", padding: "4px 0",
+                borderBottom: "1px solid #1e1e2e",
+                display: "flex", justifyContent: "space-between",
+              }}>
+                <span style={{ color: "#c4bfb0" }}>{src.areaName}</span>
+                <span style={{ color: src.minLevel <= 55 ? "#4ade80" : "#f59e0b", fontSize: "10px" }}>
+                  Melee Lv {src.minLevel}+
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+})}
                 </div>
               </div>
 

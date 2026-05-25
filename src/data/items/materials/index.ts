@@ -74,6 +74,12 @@ export const MATERIALS: ItemDefinition[] = [
   { id: "crocodile_shield", name: "Crocodile Scale Shield", type: "accessory", tier: "uncommon", description: "Perisai sisik buaya.", sellPrice: 200, stats: { defense: 22, vit: 3 } },
   // Crafted materials
   { id: "basic_combat_rune", name: "Basic Combat Rune", type: "material", tier: "common", description: "Rune dasar untuk meningkatkan serangan.", sellPrice: 30 },
-];
+
+  { id: "simple_bandage", name: "Simple Bandage", type: "consumable", tier: "common", description: "Pembalut sederhana, memulihkan 20 HP.", sellPrice: 8 },
+  { id: "basic_offering", name: "Basic Offering", type: "consumable", tier: "common", description: "Persembahan sederhana untuk ritual.", sellPrice: 12 },
+  { id: "dried_fish", name: "Dried Fish", type: "consumable", tier: "common", description: "Ikan kering bergizi.", sellPrice: 6 },
+  { id: "clay_tablet", name: "Clay Tablet", type: "material", tier: "common", description: "Tablet tanah liat untuk mantra.", sellPrice: 10 },
+  { id: "scale_pouch", name: "Scale Pouch", type: "material", tier: "common", description: "Kantong dari sisik buaya.", sellPrice: 18 },
+  ];
 
 export const MATERIAL_MAP = Object.fromEntries(MATERIALS.map((m) => [m.id, m]));

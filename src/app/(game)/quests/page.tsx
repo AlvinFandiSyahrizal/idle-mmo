@@ -91,6 +91,28 @@ export default function QuestsPage() {
             </p>
           </div>
 
+          {/* Progress summary bar */}
+<div style={{
+  display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap",
+}}>
+  {[
+    { label: "Belum mulai", count: filtered.filter(q => q.progress === 0 && !q.completed).length, color: "#4a4a5a" },
+    { label: "Sedang berjalan", count: filtered.filter(q => q.progress > 0 && !q.completed).length, color: "#f59e0b" },
+    { label: "Selesai", count: filtered.filter(q => q.completed && !q.claimed).length, color: "#22c55e" },
+    { label: "Sudah diambil", count: filtered.filter(q => q.claimed).length, color: "#374151" },
+  ].map((s) => (
+    <div key={s.label} style={{
+      background: "#111118", border: "1px solid #2a2a3a",
+      borderRadius: "8px", padding: "6px 14px",
+      display: "flex", alignItems: "center", gap: "6px",
+    }}>
+      <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: s.color, display: "inline-block" }} />
+      <span style={{ fontSize: "11px", color: "#6b6b80" }}>{s.label}</span>
+      <span style={{ fontSize: "12px", fontWeight: "bold", color: s.color }}>{s.count}</span>
+    </div>
+  ))}
+</div>
+
           {/* Tabs */}
           <div style={{ display: "flex", gap: "6px" }}>
             {(["daily", "weekly"] as const).map((t) => (
