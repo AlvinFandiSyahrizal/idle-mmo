@@ -1,5 +1,8 @@
 import { create } from "zustand";
 
+const QUEST_PROGRESS_EVENT =
+  "quest-progress-updated";
+
 export interface CombatLog {
   id: string;
   message: string;
@@ -122,6 +125,14 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
             killCount: s.stats.killCount + (monsterName ? 1 : 0),
           },
         }));
+
+        if (monsterName) {
+          window.dispatchEvent(
+            new CustomEvent(
+              QUEST_PROGRESS_EVENT
+            )
+          );
+        }
 
         onUpdate?.();
       } catch (err) {

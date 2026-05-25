@@ -30,7 +30,37 @@ export default function QuestsPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => {
+      fetchData();
+
+      const refresh = () => {
+        fetchData();
+      };
+
+      // dari combat tick
+      window.addEventListener(
+        "quest-progress-updated",
+        refresh
+      );
+
+      // kalau ada quest claim/update manual
+      window.addEventListener(
+        "quest-updated",
+        refresh
+      );
+
+      return () => {
+        window.removeEventListener(
+          "quest-progress-updated",
+          refresh
+        );
+
+        window.removeEventListener(
+          "quest-updated",
+          refresh
+        );
+      };
+    }, [fetchData]);
 
   function showFeedback(msg: string, ok: boolean) {
     setFeedback({ msg, ok });
