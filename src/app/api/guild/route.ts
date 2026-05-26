@@ -73,7 +73,14 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const { action, guildName, description, guildId } = await req.json();
+    const body = await req.json();
+
+    const action = body.action;
+    const guildName =
+      body.guildName ?? body.name;
+    const description =
+      body.description ?? "";
+    const guildId = body.guildId;
 
     const character = await prisma.character.findUnique({
       where: { userId: session.user.id },
