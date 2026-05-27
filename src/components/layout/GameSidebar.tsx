@@ -10,6 +10,8 @@ import { useCombatStore } from "@/stores/combatStore";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "⚱" },
   { href: "/combat", label: "Combat", icon: "⚔️" },
+  { href: "/gathering", label: "Gathering", icon: "⛏️" },
+  { href: "/world-boss", label: "World Boss", icon: "👹" },
   { href: "/inventory", label: "Inventory", icon: "🎒" },
   { href: "/skills", label: "Skills", icon: "📊" },
   { href: "/crafting", label: "Crafting", icon: "🔨" },
@@ -17,6 +19,7 @@ const NAV_ITEMS = [
   { href: "/leaderboard", label: "Leaderboard", icon: "🏆" },
   { href: "/profile", label: "Profile", icon: "👤" },
   { href: "/guild", label: "Guild", icon: "🏛️" },
+  { href: "/ascension", label: "Ascension", icon: "🌟" },
 ];
 
 interface Props {

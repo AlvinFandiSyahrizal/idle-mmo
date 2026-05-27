@@ -98,15 +98,34 @@ export default function QuestsPage() {
     </div>
   );
 
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", background: "#0a0a0f", color: "#e2e0d8", fontFamily: "Georgia, serif" }}>
+  
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          background: "#0a0a0f",
+          color: "#e2e0d8",
+          fontFamily: "Georgia, serif",
+          overflow: "hidden",
+        }}
+      >
       <GameSidebar character={character} />
 
-      <main style={{ flex: 1, padding: "28px 24px", overflow: "auto", minWidth: 0 }}>
+      <main style={{ flex: 1, minWidth: 0, height: "100vh", display: "flex", flexDirection: "column", padding: "28px 24px", overflow: "hidden", }} >
         <div className="game-mobile-spacer" style={{ height: 0 }} />
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            width: "100%",
+            gap: "16px",
+            flexWrap: "wrap",
+          }}
+        >
           <div>
             <h1 style={{ fontSize: "20px", fontWeight: "bold", color: "#f0ece0", margin: 0 }}>
               📋 Quests
@@ -179,7 +198,24 @@ export default function QuestsPage() {
         )}
 
         {/* Quest list */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "680px" }}>
+        <div
+          className="quest-scroll"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+
+            width: "100%",
+            minWidth: 0,
+            paddingRight: "12px",
+            paddingBottom: "16px",
+          }}
+        >
+
           {filtered.map((quest) => {
             const catColor = CATEGORY_COLORS[quest.category] ?? "#6b6b80";
             const isClaiming = claiming === quest.id;
@@ -191,7 +227,9 @@ export default function QuestsPage() {
                   background: "#111118",
                   border: `1px solid ${quest.canClaim ? "rgba(245,158,11,0.3)" : quest.completed ? "#1e3a1e" : "#2a2a3a"}`,
                   borderRadius: "14px",
-                  padding: "16px 18px",
+                  padding: "18px 22px",
+                  width: "100%",
+                  boxSizing: "border-box",
                   transition: "border-color 0.2s",
                 }}
               >
@@ -303,14 +341,35 @@ export default function QuestsPage() {
       </main>
 
       <style>{`
-        @media (max-width: 768px) {
-          .game-mobile-spacer { height: 56px !important; }
-          .game-mobile-topbar { display: flex !important; }
+        .quest-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #2a2a3a transparent;
         }
-        @media (min-width: 769px) {
-          .game-mobile-topbar { display: none !important; }
+
+        .quest-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .quest-scroll::-webkit-scrollbar-thumb {
+          background: #2a2a3a;
+          border-radius: 10px;
+        }
+
+        .quest-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        @media (max-width: 768px) {
+          main {
+            padding: 16px 12px !important;
+          }
+
+          .quest-scroll {
+            padding-right: 0 !important;
+          }
         }
       `}</style>
+      
     </div>
   );
 }

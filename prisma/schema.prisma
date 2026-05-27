@@ -7,10 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
 // AUTH
-// ============================================
-
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -60,10 +57,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============================================
 // CHARACTER
-// ============================================
-
 model Character {
   id             String        @id @default(cuid())
   userId         String        @unique
@@ -117,10 +111,7 @@ model Character {
   loreFragments  CharacterLore[]
 }
 
-// ============================================
 // SKILLS
-// ============================================
-
 model CharacterSkill {
   id            String    @id @default(cuid())
   characterId   String
@@ -133,10 +124,7 @@ model CharacterSkill {
   @@unique([characterId, skillId])
 }
 
-// ============================================
 // INVENTORY & EQUIPMENT
-// ============================================
-
 model InventoryItem {
   id            String    @id @default(cuid())
   characterId   String
@@ -165,10 +153,7 @@ model Equipment {
   character     Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
-// ============================================
 // WORLD DATA (zones, areas, monsters)
-// ============================================
-
 model Zone {
   id            String  @id
   name          String
@@ -230,10 +215,7 @@ model MonsterLoot {
   monster       Monster @relation(fields: [monsterId], references: [id])
 }
 
-// ============================================
 // QUESTS
-// ============================================
-
 model QuestProgress {
   id            String    @id @default(cuid())
   characterId   String
@@ -249,10 +231,7 @@ model QuestProgress {
   @@unique([characterId, questId])
 }
 
-// ============================================
 // ACHIEVEMENTS
-// ============================================
-
 model CharacterAchievement {
   id            String    @id @default(cuid())
   characterId   String
@@ -264,10 +243,7 @@ model CharacterAchievement {
   @@unique([characterId, achievementId])
 }
 
-// ============================================
 // PETS
-// ============================================
-
 model CharacterPet {
   id            String    @id @default(cuid())
   characterId   String
@@ -281,10 +257,7 @@ model CharacterPet {
   @@unique([characterId, petId])
 }
 
-// ============================================
 // LORE
-// ============================================
-
 model CharacterLore {
   id            String    @id @default(cuid())
   characterId   String
@@ -296,10 +269,7 @@ model CharacterLore {
   @@unique([characterId, loreId])
 }
 
-// ============================================
 // GUILD
-// ============================================
-
 model Guild {
   id            String    @id @default(cuid())
   name          String    @unique
@@ -322,4 +292,32 @@ model GuildMember {
   guild         Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   @@id([guildId, characterId])
+}
+
+model WorldBoss {
+  id            String   @id @default(cuid())
+  bossId        String
+  name          String
+  maxHp         BigInt
+  currentHp     BigInt
+  status        String   @default("active") // active | defeated | expired
+  spawnedAt     DateTime @default(now())
+  defeatedAt    DateTime?
+  expiresAt     DateTime
+
+  participants  WorldBossParticipant[]
+}
+
+model WorldBossParticipant {
+  id            String   @id @default(cuid())
+  worldBossId   String
+  characterId   String
+  damage        BigInt   @default(0)
+  hits          Int      @default(0)
+  rewarded      Boolean  @default(false)
+
+  worldBoss     WorldBoss @relation(fields: [worldBossId], references: [id])
+
+  @@unique([worldBossId, characterId])
+  @@index([worldBossId])
 }
