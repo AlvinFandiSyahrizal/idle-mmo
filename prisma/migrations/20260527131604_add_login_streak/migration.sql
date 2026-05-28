@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `character` ADD COLUMN `lastLoginDate` DATETIME(3) NULL,
+    ADD COLUMN `loginStreak` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `longestStreak` INTEGER NOT NULL DEFAULT 0;

@@ -168,3 +168,13 @@ declare module "next-auth/jwt" {
     username: string;
   }
 }
+
+export interface NotificationItem {
+  id: string;
+  type: "levelup" | "quest" | "world_boss" | "streak" | "reward" | "system";
+  title: string;
+  message: string;
+  icon: string;
+  read: boolean;
+  createdAt: Date;
+}

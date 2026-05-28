@@ -98,6 +98,10 @@ model Character {
   combatStartedAt DateTime?
   lastOnlineAt   DateTime      @default(now())
 
+  loginStreak       Int       @default(0)
+  lastLoginDate     DateTime?
+  longestStreak     Int       @default(0)
+
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 

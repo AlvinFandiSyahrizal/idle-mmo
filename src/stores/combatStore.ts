@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useNotificationStore } from "./notificationStore";
 
 const QUEST_PROGRESS_EVENT =
   "quest-progress-updated";
@@ -105,6 +106,15 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
                 : msg.includes("Drop:") ? "loot"
                 : "combat";
               get().addLog(msg, type);
+
+              if (msg.includes("🎉")) {
+                useNotificationStore.getState().addNotification({
+                  type: "levelup",
+                  title: "Level Up! 🎉",
+                  message: msg.replace("🎉 ", ""),
+                  icon: "⬆️",
+                });
+              }
             }, i * 10);
           });
         }

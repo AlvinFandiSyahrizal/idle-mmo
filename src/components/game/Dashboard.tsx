@@ -3,6 +3,7 @@
 import { CHARACTER_CLASSES } from "@/data/characters";
 import { SKILLS } from "@/data/skills";
 import GameSidebar from "@/components/layout/GameSidebar";
+import NotificationBell from "@/components/game/NotificationBell";
 
 interface Props {
   character: any;
@@ -48,7 +49,8 @@ export default function Dashboard({ character, onRefresh }: Props) {
               Selamat datang, {character.name}
             </p>
           </div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+              <NotificationBell />
             {[
               { icon: "💰", val: character.gold.toLocaleString(), label: "Gold" },
               { icon: "🔮", val: character.soulShard, label: "Shard" },
