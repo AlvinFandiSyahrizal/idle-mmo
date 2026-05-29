@@ -178,3 +178,32 @@ export interface NotificationItem {
   read: boolean;
   createdAt: Date;
 }
+
+export interface EquippedGear {
+  weapon?: InventoryItemWithDef;
+  helmet?: InventoryItemWithDef;
+  chest?: InventoryItemWithDef;
+  gloves?: InventoryItemWithDef;
+  boots?: InventoryItemWithDef;
+  accessory1?: InventoryItemWithDef;
+  accessory2?: InventoryItemWithDef;
+}
+
+export interface InventoryItemWithDef {
+  id: string;
+  itemId: string;
+  quantity: number;
+  tier: string;
+  name: string;
+  type: string;
+  description: string;
+  sellPrice: number;
+  stats?: {
+    str?: number;
+    agi?: number;
+    int_stat?: number;
+    vit?: number;
+    damage?: number;
+    defense?: number;
+  };
+}
