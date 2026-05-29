@@ -77,7 +77,7 @@ export default function WorldBossPage() {
       }
       const d = data.data;
       addLog(`⚔️ Kamu menyerang ${bossData?.boss?.name} untuk ${d.damage.toLocaleString()} damage!`, "hit");
-      addLog(`💥 ${bossData?.boss?.name} membalas — kamu terkena ${d.bossDmgToPlayer} damage.`, "boss");
+      addLog(`💥 ${bossData?.boss?.name} menyerang balik ${d.bossDmgToPlayer} damage! (HP tidak berkurang)`, "boss");
       if (d.bossDefeated) {
         addLog(`🏆 ${bossData?.boss?.name} DIKALAHKAN! Reward sudah dibagikan!`, "defeat");
         setAutoAttack(false);

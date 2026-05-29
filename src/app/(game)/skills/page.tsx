@@ -55,6 +55,7 @@ export default function SkillsPage() {
   const [activeCategory, setActiveCategory] = useState("combat");
   const [spending, setSpending] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [confirmStat, setConfirmStat] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     const [charRes, skillRes] = await Promise.all([
@@ -76,6 +77,7 @@ export default function SkillsPage() {
   }
 
   async function spendPoint(stat: string) {
+    setConfirmStat(null);
     setSpending(stat);
     const res = await fetch("/api/skills/spend-point", {
       method: "POST",
@@ -85,7 +87,8 @@ export default function SkillsPage() {
     const data = await res.json();
     setSpending(null);
     if (data.success) {
-      showFeedback(`+1 ${stat.toUpperCase().replace("_STAT", "")}`, true);
+      const label = stat.replace("_stat", "").toUpperCase();
+      showFeedback(`+1 ${label}`, true);
       fetchData();
     } else {
       showFeedback(data.error, false);
@@ -270,6 +273,41 @@ export default function SkillsPage() {
                 Attribute Points
               </div>
 
+              {/* Reset button */}
+                <div style={{
+                  background: "#111118", border: "1px solid #2a2a3a",
+                  borderRadius: "14px", padding: "14px 18px",
+                }}>
+                  <div style={{ fontSize: "11px", color: "#6b6b80", marginBottom: "8px" }}>
+                    Salah distribusi stat? Reset semua attribute points.
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "12px", color: "#4a4a5a" }}>Biaya reset</span>
+                    <span style={{ fontSize: "13px", fontWeight: "bold", color: "#f59e0b" }}>5,000 Gold</span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!confirm("Reset semua attribute points? Biaya 5,000 Gold.")) return;
+                      const res = await fetch("/api/skills/reset-points", { method: "POST" });
+                      const data = await res.json();
+                      if (data.success) {
+                        showFeedback(`Reset berhasil! +${data.data.refunded} points dikembalikan`, true);
+                        fetchData();
+                      } else {
+                        showFeedback(data.error, false);
+                      }
+                    }}
+                    style={{
+                      width: "100%", padding: "8px", borderRadius: "8px",
+                      background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)",
+                      color: "#ef4444", fontSize: "12px",
+                      fontFamily: "Georgia, serif", cursor: "pointer",
+                    }}
+                  >
+                    🔄 Reset Attribute Points
+                  </button>
+                </div>
+
               {/* Points available */}
               <div style={{
                 background: skillData?.attributePoints > 0
@@ -318,21 +356,21 @@ export default function SkillsPage() {
                         </div>
                         <div style={{ fontSize: "10px", color: "#4a4a5a" }}>{stat.desc}</div>
                       </div>
-                      <button
-                        onClick={() => spendPoint(stat.key)}
-                        disabled={!canSpend || isSpending}
-                        style={{
-                          width: "28px", height: "28px", borderRadius: "7px",
-                          background: canSpend ? `rgba(${stat.color.replace("#", "").match(/.{2}/g)?.map(h => parseInt(h, 16)).join(",")},0.15)` : "#1a1a28",
-                          border: canSpend ? `1px solid ${stat.color}44` : "1px solid #2a2a3a",
-                          color: canSpend ? stat.color : "#4a4a5a",
-                          fontSize: "16px", cursor: canSpend ? "pointer" : "not-allowed",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          transition: "all 0.2s", flexShrink: 0,
-                        }}
-                      >
-                        {isSpending ? "…" : "+"}
-                      </button>
+                        <button
+                          onClick={() => canSpend ? setConfirmStat(stat.key) : null}
+                          disabled={!canSpend || isSpending}
+                          style={{
+                            width: "28px", height: "28px", borderRadius: "7px",
+                            background: canSpend ? `${stat.color}22` : "#1a1a28",
+                            border: canSpend ? `1px solid ${stat.color}44` : "1px solid #2a2a3a",
+                            color: canSpend ? stat.color : "#4a4a5a",
+                            fontSize: "16px", cursor: canSpend ? "pointer" : "not-allowed",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isSpending ? "…" : "+"}
+                        </button>
                     </div>
                   );
                 })}
@@ -384,6 +422,61 @@ export default function SkillsPage() {
 
           </div>
         </div>
+
+        {/* Confirm stat modal */}
+        {confirmStat && (
+          <div style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "Georgia, serif", padding: "20px",
+          }}>
+            <div style={{
+              background: "#111118", border: "1px solid #2a2a3a",
+              borderRadius: "16px", padding: "24px",
+              width: "100%", maxWidth: "320px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "28px", marginBottom: "10px" }}>
+                {STAT_INFO.find((s) => s.key === confirmStat)?.icon}
+              </div>
+              <h3 style={{ color: "#f0ece0", fontSize: "16px", margin: "0 0 8px" }}>
+                Tambah +1 {confirmStat.replace("_stat", "").toUpperCase()}?
+              </h3>
+              <p style={{ color: "#6b6b80", fontSize: "12px", margin: "0 0 6px", lineHeight: "1.5" }}>
+                {STAT_INFO.find((s) => s.key === confirmStat)?.desc}
+              </p>
+              <p style={{ color: "#4a4a5a", fontSize: "11px", margin: "0 0 20px" }}>
+                Sisa point: {skillData?.attributePoints ?? 0}
+              </p>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  onClick={() => setConfirmStat(null)}
+                  style={{
+                    flex: 1, padding: "9px", borderRadius: "8px",
+                    background: "transparent", border: "1px solid #2a2a3a",
+                    color: "#6b6b80", fontSize: "13px",
+                    fontFamily: "Georgia, serif", cursor: "pointer",
+                  }}
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => spendPoint(confirmStat)}
+                  style={{
+                    flex: 2, padding: "9px", borderRadius: "8px",
+                    background: "#f59e0b", border: "none",
+                    color: "#0a0a0f", fontSize: "13px", fontWeight: "bold",
+                    fontFamily: "Georgia, serif", cursor: "pointer",
+                  }}
+                >
+                  Konfirmasi
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
 
       <style>{`

@@ -84,13 +84,6 @@ export async function POST() {
         });
       }
 
-      // Apply boss damage to player HP
-      const newPlayerHp = Math.max(1, character.hp - bossDmgToPlayer);
-      await tx.character.update({
-        where: { id: character.id },
-        data: { hp: newPlayerHp },
-      });
-
       // If boss defeated, distribute rewards
       if (bossDefeated) {
         const allParticipants = await tx.worldBossParticipant.findMany({

@@ -5,6 +5,7 @@ import { SKILLS } from "@/data/skills";
 import GameSidebar from "@/components/layout/GameSidebar";
 import NotificationBell from "@/components/game/NotificationBell";
 import { useRegen } from "@/hooks/useRegen";
+import { useEffect, useState } from "react";
 
 interface Props {
   character: any;
@@ -31,6 +32,15 @@ export default function Dashboard({ character, onRefresh }: Props) {
   const gatherSkills = character.skills?.filter((s: any) =>
     ["excavation", "inscription", "herbalism", "fishing"].includes(s.skillId)
   ) ?? [];
+
+  const [streakInfo, setStreakInfo] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/character/login-streak")
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setStreakInfo(d.data); });
+  }, []);
+  
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", background: "#0a0a0f", color: "#e2e0d8", fontFamily: "Georgia, serif" }}>
@@ -68,6 +78,35 @@ export default function Dashboard({ character, onRefresh }: Props) {
                 </div>
               </div>
             ))}
+                {/* Streak badge */}
+                  {streakInfo && (
+                    <div style={{
+                      background: streakInfo.streak >= 7
+                        ? "rgba(245,158,11,0.1)"
+                        : "rgba(34,197,94,0.08)",
+                      border: `1px solid ${streakInfo.streak >= 7 ? "rgba(245,158,11,0.25)" : "rgba(34,197,94,0.2)"}`,
+                      borderRadius: "10px", padding: "6px 12px",
+                      display: "flex", alignItems: "center", gap: "6px",
+                    }}>
+                      <span style={{ fontSize: "14px" }}>
+                        {streakInfo.streak >= 7 ? "⭐" : streakInfo.streak >= 3 ? "🔥" : "✨"}
+                      </span>
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: "bold", color: streakInfo.streak >= 7 ? "#f59e0b" : "#4ade80" }}>
+                          {streakInfo.streak} hari
+                        </div>
+                        <div style={{ fontSize: "9px", color: "#4a4a5a" }}>
+                          Login streak{streakInfo.claimedToday ? " ✓" : ""}
+                        </div>
+                      </div>
+                      {streakInfo.nextMilestone && (
+                        <div style={{ fontSize: "9px", color: "#4a4a5a", paddingLeft: "6px", borderLeft: "1px solid #1e1e2e" }}>
+                          Next: {streakInfo.nextMilestone} hari<br />
+                          <span style={{ color: "#f59e0b" }}>+{streakInfo.nextMilestoneReward?.gold}g</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
           </div>
         </div>
 
@@ -238,6 +277,7 @@ const cardStyle: React.CSSProperties = {
   borderRadius: "14px",
   padding: "18px",
 };
+
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
