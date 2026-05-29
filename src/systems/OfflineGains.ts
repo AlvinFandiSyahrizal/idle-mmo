@@ -1,6 +1,7 @@
 import { MonsterDefinition } from "@/types";
 import { rollLoot, calculatePlayerDamage, calculateMonsterDamage } from "./CombatEngine";
 import { getExpToNextLevel } from "@/data/skills";
+import { getPrimaryCombatStyle, getSkillExpGain } from "./CombatEngine";
 
 export interface OfflineResult {
   duration: number; // detik
@@ -101,6 +102,28 @@ export function calculateOfflineGains(
   const meleeExpGain = Math.floor(expGained * 0.6);
   const defenseExpGain = Math.floor(expGained * 0.2);
 
+    const combatStyle = getPrimaryCombatStyle(character.classId);
+  const skillExpMap = getSkillExpGain(expGained, combatStyle);
+
+  // Hitung level gains untuk semua skill yang terlibat
+  for (const [skillId, expGain] of Object.entries(skillExpMap)) {
+    const skill = skills.find((s) => s.skillId === skillId);
+    if (!skill) continue;
+
+    let lvl = skill.level;
+    let exp = skill.experience + expGain;
+    let levelsGained = 0;
+
+    while (lvl < 99) {
+      const needed = getExpToNextLevel(lvl);
+      if (exp >= needed) { exp -= needed; lvl++; levelsGained++; }
+      else break;
+    }
+
+    if (levelsGained > 0) skillLevelsGained[skillId] = levelsGained;
+  }
+
+
   const meleeSkill = skills.find((s) => s.skillId === "melee");
   if (meleeSkill) {
     let lvl = meleeSkill.level;
@@ -127,6 +150,7 @@ export function calculateOfflineGains(
     if (levelsGained > 0) skillLevelsGained["defense"] = levelsGained;
   }
 
+
   return {
     duration: durationSeconds,
     durationText: formatDuration(durationSeconds),
@@ -138,6 +162,8 @@ export function calculateOfflineGains(
     cappedAt: MAX_OFFLINE_HOURS,
   };
 }
+
+
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds} detik`;

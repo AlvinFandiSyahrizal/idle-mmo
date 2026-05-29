@@ -14,6 +14,12 @@ const LOG_COLORS: Record<string, string> = {
   system: "#60a5fa",
 };
 
+const STYLE_INFO: Record<string, { icon: string; label: string; color: string }> = {
+  melee:  { icon: "⚔️", label: "Melee",  color: "#ef4444" },
+  ranged: { icon: "🏹", label: "Ranged", color: "#22c55e" },
+  magic:  { icon: "🔮", label: "Magic",  color: "#818cf8" },
+};
+
 const AREA_MONSTERS: Record<string, { name: string; emoji: string; color: string }[]> = {
   // Zone 1
   area1_1: [
@@ -218,30 +224,30 @@ export default function CombatPage() {
               </div>
             )}
 
-{/* Area list */}
-<div style={card}>
-  <Label>Area Farming</Label>
-  <ZoneAreaList
-    availableAreas={availableAreas}
-    currentAreaId={currentAreaId}
-    onSelectArea={(areaId, areaName) => handleStart(areaId, areaName)}
-    onStop={handleStop}
-    isActive={isActive}
-  />
-  {isActive && (
-    <button
-      onClick={stopCombat}
-      style={{
-        marginTop: "8px", width: "100%", padding: "8px", borderRadius: "7px",
-        background: "rgba(220,38,38,0.08)", border: "1px solid #3a2020",
-        color: "#ef4444", fontSize: "12px", fontFamily: "Georgia, serif",
-        cursor: "pointer", fontWeight: "bold",
-      }}
-    >
-      🛑 Hentikan
-    </button>
-  )}
-</div>
+            {/* Area list */}
+            <div style={card}>
+              <Label>Area Farming</Label>
+              <ZoneAreaList
+                availableAreas={availableAreas}
+                currentAreaId={currentAreaId}
+                onSelectArea={(areaId, areaName) => handleStart(areaId, areaName)}
+                onStop={handleStop}
+                isActive={isActive}
+              />
+              {isActive && (
+                <button
+                  onClick={stopCombat}
+                  style={{
+                    marginTop: "8px", width: "100%", padding: "8px", borderRadius: "7px",
+                    background: "rgba(220,38,38,0.08)", border: "1px solid #3a2020",
+                    color: "#ef4444", fontSize: "12px", fontFamily: "Georgia, serif",
+                    cursor: "pointer", fontWeight: "bold",
+                  }}
+                >
+                  🛑 Hentikan
+                </button>
+              )}
+            </div>
 
           </div>
 
@@ -286,6 +292,23 @@ export default function CombatPage() {
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontSize: "12px", fontWeight: "bold", color: "#f0ece0" }}>{character.name}</div>
+                      {/* Combat style badge */}
+                          {(() => {
+                            const styleId = character.classId === "siptu" ? "ranged"
+                              : character.classId === "kher-heb" || character.classId === "ashipu" ? "magic"
+                              : "melee";
+                            const style = STYLE_INFO[styleId];
+                            return (
+                              <div style={{
+                                display: "inline-flex", alignItems: "center", gap: "3px",
+                                background: `${style.color}18`, border: `1px solid ${style.color}33`,
+                                borderRadius: "6px", padding: "2px 8px", marginTop: "3px",
+                                fontSize: "10px", color: style.color,
+                              }}>
+                                {style.icon} {style.label}
+                              </div>
+                            );
+                          })()}
                       <div style={{ marginTop: "4px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#6b6b80", marginBottom: "2px" }}>
                           <span>HP</span><span style={{ color: "#ef4444" }}>{character.hp}/{character.maxHp}</span>

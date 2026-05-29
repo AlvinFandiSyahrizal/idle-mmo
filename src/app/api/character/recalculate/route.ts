@@ -48,7 +48,7 @@ export async function POST() {
     const newVit = base.vit + (defenseBonus * 1);
     const newMaxHp = base.hp + (meleeBonus * 1) + (defenseBonus * 2);
     const newMaxMp = base.mp + (magicBonus * 1);
-
+    
     await prisma.character.update({
       where: { id: character.id },
       data: {

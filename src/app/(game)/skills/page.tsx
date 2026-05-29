@@ -392,13 +392,59 @@ export default function SkillsPage() {
               background: "#111118", border: "1px solid #2a2a3a",
               borderRadius: "14px", padding: "18px",
             }}>
-              <div style={{
-                fontSize: "10px", letterSpacing: "0.15em", color: "#6b6b80",
-                textTransform: "uppercase", marginBottom: "12px",
-                paddingBottom: "8px", borderBottom: "1px solid #1e1e2e",
-              }}>
-                Stat Saat Ini
-              </div>
+              {/* Combat Power */}
+                <div style={{
+                  background: "#111118", border: "1px solid #2a2a3a",
+                  borderRadius: "14px", padding: "18px", marginTop: "14px",
+                }}>
+                  <div
+                      style={{
+                        fontSize: "10px",
+                        letterSpacing: "0.15em",
+                        color: "#6b6b80",
+                        textTransform: "uppercase",
+                        marginBottom: "12px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid #1e1e2e",
+                      }}
+                    >
+                      Estimasi Combat
+                  </div>
+                  {skillData && (() => {
+                    const meleeEst  = Math.floor(skillData.str * 1.8 + (skillData.skills?.find((s:any)=>s.skillId==="melee")?.level??1) * 1.2);
+                    const rangedEst = Math.floor(skillData.agi * 2.0 + (skillData.skills?.find((s:any)=>s.skillId==="ranged")?.level??1) * 1.4);
+                    const magicEst  = Math.floor(skillData.int_stat * 2.2 + (skillData.skills?.find((s:any)=>s.skillId==="magic")?.level??1) * 1.5);
+
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {[
+                          { label: "⚔️ Melee DMG",  val: meleeEst,  color: "#ef4444" },
+                          { label: "🏹 Ranged DMG", val: rangedEst, color: "#22c55e" },
+                          { label: "🔮 Magic DMG",  val: magicEst,  color: "#818cf8" },
+                        ].map((s) => (
+                          <div key={s.label} style={{
+                            background: "#0f0f1a", borderRadius: "8px",
+                            padding: "8px 12px",
+                            display: "flex", justifyContent: "space-between", alignItems: "center",
+                          }}>
+                            <span style={{ fontSize: "12px", color: "#6b6b80" }}>{s.label}</span>
+                            <span style={{ fontSize: "14px", fontWeight: "bold", color: s.color }}>~{s.val}</span>
+                          </div>
+                        ))}
+                        <p style={{ fontSize: "10px", color: "#4a4a5a", margin: "4px 0 0", lineHeight: "1.5" }}>
+                          Damage aktif sesuai kelas karaktermu.
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+                  <div style={{
+                      fontSize: "10px", letterSpacing: "0.15em", color: "#6b6b80",
+                      textTransform: "uppercase", marginBottom: "12px",
+                      paddingBottom: "8px", borderBottom: "1px solid #1e1e2e",
+                    }}>
+                      Stat Saat Ini
+                  </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                 {[
                   { label: "HP", val: `${skillData?.hp}/${skillData?.maxHp}`, color: "#ef4444" },
