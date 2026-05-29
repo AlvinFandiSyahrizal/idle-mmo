@@ -1,31 +1,64 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 
+   GLOBAL RESET & BASE
+/*  */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #0a0a0f;
+  color: #e2e0d8;
+  font-family: Georgia, 'Times New Roman', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Game layout responsive */
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4a;
+}
+
+/* Input & textarea base */
+input, textarea, select {
+  font-family: Georgia, serif;
+  color: #e2e0d8;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.3;
+}
+
+/* Focus ring */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, 0.5);
+  outline-offset: 2px;
+}
+
+/* 
+   GAME LAYOUT — RESPONSIVE
+/*  */
 .game-layout {
   display: flex;
   min-height: 100vh;
@@ -34,6 +67,10 @@ body {
 .game-sidebar {
   width: 210px;
   flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
   transition: transform 0.3s ease;
 }
 
@@ -49,34 +86,260 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
     z-index: 50;
     transform: translateX(-100%);
+    height: 100vh;
   }
 
   .game-sidebar.open {
     transform: translateX(0);
-  }
-
-  .game-sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 40;
-  }
-
-  .game-sidebar-overlay.open {
-    display: block;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
   }
 
   .game-mobile-topbar {
     display: flex !important;
+  }
+
+  .game-mobile-spacer {
+    height: 56px !important;
   }
 }
 
 @media (min-width: 769px) {
   .game-mobile-topbar {
     display: none !important;
+  }
+
+  .game-mobile-spacer {
+    height: 0 !important;
+  }
+}
+
+/* 
+   ANIMATIONS
+/*  */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes bossShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+
+/* 
+   COMMON CARD STYLES
+/*  */
+.game-card {
+  background: #111118;
+  border: 1px solid #2a2a3a;
+  border-radius: 14px;
+  padding: 18px;
+  transition: border-color 0.2s;
+}
+
+.game-card:hover {
+  border-color: #3a3a4a;
+}
+
+.game-card-dark {
+  background: #0f0f1a;
+  border: 1px solid #1e1e2e;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+/* 
+   BUTTON VARIANTS
+/*  */
+.btn-primary {
+  padding: 10px 20px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  border: none;
+  color: #0a0a0f;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #1a1a28;
+  color: #4a4a5a;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #2a2a3a;
+  color: #6b6b80;
+  font-size: 12px;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  border-color: #3a3a4a;
+  color: #9a9aaa;
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #ef4444;
+  font-size: 12px;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+/* 
+   TIER COLORS
+/*  */
+.tier-common    { color: #9ca3af; }
+.tier-uncommon  { color: #4ade80; }
+.tier-rare      { color: #60a5fa; }
+.tier-epic      { color: #c084fc; }
+.tier-legendary { color: #f59e0b; }
+.tier-divine    { color: #f0ece0; }
+
+/* 
+   PROGRESS BARS
+/*  */
+.progress-track {
+  height: 5px;
+  background: #1a1a28;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* 
+   TOOLTIP
+/*  */
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-wrapper:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #1a1a28;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #c4bfb0;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+  z-index: 100;
+  pointer-events: none;
+  font-family: Georgia, serif;
+}
+
+/* 
+   MOBILE NAV BAR (bottom)
+/*  */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: #111118;
+    border-top: 1px solid #2a2a3a;
+    padding: 8px 4px;
+    justify-content: space-around;
+  }
+
+  .mobile-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: Georgia, serif;
+    font-size: 9px;
+    color: #6b6b80;
+    transition: color 0.2s;
+    min-width: 44px;
+  }
+
+  .mobile-bottom-nav a.active {
+    color: #f59e0b;
+  }
+
+  .mobile-bottom-nav .nav-icon {
+    font-size: 18px;
   }
 }

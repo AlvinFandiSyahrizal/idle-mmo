@@ -4,6 +4,7 @@ import { CHARACTER_CLASSES } from "@/data/characters";
 import { SKILLS } from "@/data/skills";
 import GameSidebar from "@/components/layout/GameSidebar";
 import NotificationBell from "@/components/game/NotificationBell";
+import { useRegen } from "@/hooks/useRegen";
 
 interface Props {
   character: any;

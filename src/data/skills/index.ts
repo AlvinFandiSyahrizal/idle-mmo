@@ -22,9 +22,15 @@ export const SKILLS: SkillDefinition[] = [
 ];
 
 export const SKILL_EXP_TABLE: number[] = Array.from({ length: 99 }, (_, i) => {
-  // RuneScape-style exp formula
   const level = i + 1;
-  return Math.floor(level + 300 * Math.pow(2, level / 7));
+  // Smoother curve: early levels fast, late levels slow
+  if (level <= 10)  return Math.floor(level * 80);
+  if (level <= 20)  return Math.floor(level * 150);
+  if (level <= 30)  return Math.floor(level * 250);
+  if (level <= 50)  return Math.floor(level * 400);
+  if (level <= 70)  return Math.floor(level * 650);
+  if (level <= 90)  return Math.floor(level * 1000);
+  return Math.floor(level * 1500);
 });
 
 export function getExpForLevel(level: number): number {
