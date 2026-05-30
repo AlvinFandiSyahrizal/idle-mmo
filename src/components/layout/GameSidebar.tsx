@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: "/profile",      label: "Profile",      icon: "👤" },
   { href: "/guild",        label: "Guild",        icon: "🏛️" },
   { href: "/ascension",    label: "Ascension",    icon: "🌟" },
+  { href: "/lore",         label: "Lore",         icon: "📜" },
 ];
 
 const MOBILE_NAV = [

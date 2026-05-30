@@ -71,6 +71,38 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        // Lore from gathering
+        if (Math.random() < 0.05) { // 5% chance
+          const { LORE_FRAGMENTS } = await import("@/data/lore");
+          const gatherLore = LORE_FRAGMENTS.filter(
+            (l) => l.source === "gathering" && l.zoneId === area.zoneId
+          );
+
+          if (gatherLore.length > 0) {
+            const randomLore = gatherLore[Math.floor(Math.random() * gatherLore.length)];
+            const existing = await prisma.characterLore.findUnique({
+              where: { characterId_loreId: { characterId: character.id, loreId: randomLore.id } },
+            });
+
+            if (!existing) {
+              await prisma.characterLore.create({
+                data: { characterId: character.id, loreId: randomLore.id },
+              });
+              return NextResponse.json({
+                success: true,
+                data: {
+                  gathered,
+                  expGained: expGain,
+                  skillLevel: newLevel,
+                  leveledUp,
+                  skillId: area.skill,
+                  newLore: { id: randomLore.id, title: randomLore.title },
+                },
+              });
+            }
+          }
+        }
+
         // Add gathered items to inventory
         for (const item of gathered) {
           const existing = await tx.inventoryItem.findFirst({

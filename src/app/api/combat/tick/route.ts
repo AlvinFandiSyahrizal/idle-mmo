@@ -201,6 +201,33 @@ export async function POST(req: NextRequest) {
           });
         }
       }
+      // Lore fragment drops — small chance per kill
+      if (totalExp > 0 && Math.random() < 0.03) { // 3% chance per monster kill
+        const { LORE_FRAGMENTS } = await import("@/data/lore");
+        const { getAreaById } = await import("@/data/zones");
+
+        const area = getAreaById(character.currentAreaId ?? "");
+        if (area) {
+          const zoneId = area.zone.id;
+          const zoneLore = LORE_FRAGMENTS.filter(
+            (l) => l.zoneId === zoneId && l.source === "monster_drop"
+          );
+
+          if (zoneLore.length > 0) {
+            const randomLore = zoneLore[Math.floor(Math.random() * zoneLore.length)];
+            const alreadyHas = await tx.characterLore.findUnique({
+              where: { characterId_loreId: { characterId: character.id, loreId: randomLore.id } },
+            });
+
+            if (!alreadyHas) {
+              await tx.characterLore.create({
+                data: { characterId: character.id, loreId: randomLore.id },
+              });
+              logs.push(`📜 Lore Fragment ditemukan: "${randomLore.title}"!`);
+            }
+          }
+        }
+      }
 
       // Quest progress
       if (totalExp > 0) {
