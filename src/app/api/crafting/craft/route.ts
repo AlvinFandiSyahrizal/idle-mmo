@@ -73,6 +73,9 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const { checkAndGrantAchievements } = await import("@/systems/AchievementEngine");
+      await checkAndGrantAchievements(character.id, { craftCount: 1 });
+
       // Add output to inventory
       const existing = await tx.inventoryItem.findFirst({
         where: { characterId: character.id, itemId: recipe.outputItemId },

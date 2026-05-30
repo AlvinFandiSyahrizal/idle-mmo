@@ -232,6 +232,11 @@ export async function POST(req: NextRequest) {
           }
         }
       }
+      // Track achievements
+        if (totalExp > 0) {
+          const { checkAndGrantAchievements } = await import("@/systems/AchievementEngine");
+          await checkAndGrantAchievements(character.id, { killCount: 1 });
+        }
     });
 
     return NextResponse.json({

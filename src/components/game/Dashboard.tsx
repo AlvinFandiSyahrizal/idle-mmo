@@ -6,6 +6,7 @@ import GameSidebar from "@/components/layout/GameSidebar";
 import NotificationBell from "@/components/game/NotificationBell";
 import { useRegen } from "@/hooks/useRegen";
 import { useEffect, useState } from "react";
+import { useAchievementCheck } from "@/hooks/useAchievements";
 
 interface Props {
   character: any;
@@ -34,6 +35,8 @@ export default function Dashboard({ character, onRefresh }: Props) {
   ) ?? [];
 
   const [streakInfo, setStreakInfo] = useState<any>(null);
+
+  useAchievementCheck();
 
   useEffect(() => {
     fetch("/api/character/login-streak")

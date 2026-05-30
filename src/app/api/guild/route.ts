@@ -139,6 +139,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: "Guild sudah penuh (maks 20 member)" }, { status: 400 });
       }
 
+      const { checkAndGrantAchievements } = await import("@/systems/AchievementEngine");
+      await checkAndGrantAchievements(character.id, { guildJoined: true });
+
       await prisma.guildMember.create({
         data: { guildId: guild.id, characterId: character.id, role: "member" },
       });
