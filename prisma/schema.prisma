@@ -325,3 +325,4 @@ model WorldBossParticipant {
   @@unique([worldBossId, characterId])
   @@index([worldBossId])
 }
+

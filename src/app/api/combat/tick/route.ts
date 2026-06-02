@@ -22,6 +22,38 @@ export async function POST(req: NextRequest) {
       include: { skills: true, equipment: true, inventory: true },
     });
 
+    // Get active pet bonus
+    const activePet = await prisma.characterPet.findFirst({
+      where: { characterId: character.id, isActive: true },
+    });
+
+    let petGoldBonus   = 1.0;
+    let petExpBonus    = 1.0;
+    let petDropBonus   = 1.0;
+    let petDamageBonus = 1.0;
+
+    if (activePet) {
+      const { PET_MAP } = await import("@/data/pets");
+      const petDef = PET_MAP[activePet.petId];
+      if (petDef) {
+        const bonusScale = 1 + (activePet.level - 1) * 0.1; // +10% per level
+        const bonusValue = (petDef.bonus.value / 100) * bonusScale;
+
+        switch (petDef.bonus.type) {
+          case "gold_boost":   petGoldBonus   = 1 + bonusValue; break;
+          case "exp_boost":    petExpBonus    = 1 + bonusValue; break;
+          case "drop_boost":   petDropBonus   = 1 + bonusValue; break;
+          case "damage_boost": petDamageBonus = 1 + bonusValue; break;
+        }
+
+        // Check ability trigger
+        if (Math.random() < petDef.ability.triggerChance) {
+          if (petDef.id === "baby_sobek") petGoldBonus  *= 2;
+          if (petDef.id === "bastet_kitten") petDropBonus *= 2;
+        }
+      }
+    }
+
     if (!character || !character.isInCombat || !character.currentAreaId) {
       return NextResponse.json({ success: false, error: "Tidak sedang combat" }, { status: 400 });
     }
@@ -75,6 +107,15 @@ export async function POST(req: NextRequest) {
         skillLevels, combatStyle, weaponDamage
       );
 
+      // Apply pet bonuses
+      totalGold = Math.floor(
+        totalGold * petGoldBonus
+      );
+
+      totalExp = Math.floor(
+        totalExp * petExpBonus
+      );
+
       monsterHp = tick.monsterHpAfter;
       charHp    = tick.playerHpAfter;
 
@@ -84,7 +125,18 @@ export async function POST(req: NextRequest) {
         totalExp  += tick.expGained;
         totalGold += tick.goldGained;
         tick.loot.forEach((l) => {
-          allLoot[l.itemId] = (allLoot[l.itemId] ?? 0) + l.quantity;
+          let qty = l.quantity;
+
+          // pet drop bonus
+          if (petDropBonus > 1) {
+            qty = Math.max(
+              1,
+              Math.floor(qty * petDropBonus)
+            );
+          }
+
+          allLoot[l.itemId] =
+            (allLoot[l.itemId] ?? 0) + qty;
         });
       }
 
