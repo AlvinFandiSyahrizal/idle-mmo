@@ -54,6 +54,15 @@ export const MATERIALS: ItemDefinition[] = [
   { id: "lion_pelt", name: "Lion Pelt", type: "material", tier: "uncommon", description: "Kulit singa padang Mesopotamia.", sellPrice: 70 },
   { id: "lion_claw", name: "Lion Claw", type: "material", tier: "uncommon", description: "Cakar singa yang tajam.", sellPrice: 55 },
 
+  // Zona 6-10 materials
+  { id: "void_crystal",       name: "Void Crystal",        type: "material", tier: "epic",      description: "Kristal dari kekosongan antardimensi.",          sellPrice: 200 },
+  { id: "astral_dust",        name: "Astral Dust",          type: "material", tier: "rare",      description: "Debu bintang dari alam astral.",                 sellPrice: 85  },
+  { id: "star_chart_fragment",name: "Star Chart Fragment",  type: "material", tier: "uncommon",  description: "Pecahan peta bintang kuno Mesopotamia.",         sellPrice: 60  },
+  { id: "divine_remnant",     name: "Divine Remnant",       type: "material", tier: "epic",      description: "Sisa energi dari makhluk ilahi yang jatuh.",     sellPrice: 220 },
+  { id: "cosmic_fragment",    name: "Cosmic Fragment",      type: "material", tier: "legendary", description: "Serpihan dari fabric realitas itu sendiri.",      sellPrice: 400 },
+  { id: "ethereal_ore",       name: "Ethereal Ore",         type: "material", tier: "legendary", description: "Bijih dari alam ethereal, di luar dunia fisik.",  sellPrice: 450 },
+  { id: "silver_ingot",       name: "Silver Ingot",         type: "material", tier: "uncommon",  description: "Batangan perak murni.",                          sellPrice: 75  },
+    
   // Consumables
   { id: "health_potion_small", name: "Small Health Potion", type: "consumable", tier: "common", description: "Memulihkan 50 HP.", sellPrice: 18 },
   { id: "health_potion_medium", name: "Medium Health Potion", type: "consumable", tier: "uncommon", description: "Memulihkan 150 HP.", sellPrice: 55 },
@@ -80,6 +89,7 @@ export const MATERIALS: ItemDefinition[] = [
   { id: "dried_fish", name: "Dried Fish", type: "consumable", tier: "common", description: "Ikan kering bergizi.", sellPrice: 6 },
   { id: "clay_tablet", name: "Clay Tablet", type: "material", tier: "common", description: "Tablet tanah liat untuk mantra.", sellPrice: 10 },
   { id: "scale_pouch", name: "Scale Pouch", type: "material", tier: "common", description: "Kantong dari sisik buaya.", sellPrice: 18 },
-  ];
+
+];
 
 export const MATERIAL_MAP = Object.fromEntries(MATERIALS.map((m) => [m.id, m]));

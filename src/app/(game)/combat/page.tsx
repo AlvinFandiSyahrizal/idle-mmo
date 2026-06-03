@@ -106,6 +106,91 @@ const AREA_MONSTERS: Record<string, { name: string; emoji: string; color: string
     { name: "Humbaba Servant", emoji: "👹", color: "#b45309" },
     { name: "Wild Lion", emoji: "🦁", color: "#d97706" },
   ],
+  // Zone 6
+  area6_1: [
+    { name: "Steppe Lion Elder", emoji: "🦁", color: "#d97706" },
+    { name: "Dust Djinn",        emoji: "🌪️", color: "#92400e" },
+  ],
+  area6_2: [
+    { name: "Rogue Soldier",  emoji: "⚔️", color: "#78716c" },
+    { name: "Ur Guardian",    emoji: "🗿", color: "#57534e" },
+  ],
+  area6_3: [
+    { name: "Ziggurat Shade", emoji: "👁️", color: "#6d28d9" },
+    { name: "Copper Golem",   emoji: "🤖", color: "#b45309" },
+  ],
+  area6_4: [
+    { name: "Bull Cultist",      emoji: "🐂", color: "#dc2626" },
+    { name: "Heaven Fragment",   emoji: "✨", color: "#7c3aed" },
+  ],
+  // Zone 7
+  area7_1: [
+    { name: "Temple Shade",  emoji: "👻", color: "#4c1d95" },
+    { name: "Gate Guardian", emoji: "🚪", color: "#5b21b6" },
+  ],
+  area7_2: [
+    { name: "Anunnaki Remnant",   emoji: "👼", color: "#1d4ed8" },
+    { name: "Starfire Elemental", emoji: "⭐", color: "#d97706" },
+  ],
+  area7_3: [
+    { name: "Death Shade",     emoji: "💀", color: "#374151" },
+    { name: "Underworld Spawn",emoji: "🌑", color: "#111827" },
+  ],
+  area7_4: [
+    { name: "Kur Demon",       emoji: "😈", color: "#991b1b" },
+    { name: "Nergal's Champion",emoji: "⚔️", color: "#7f1d1d" },
+  ],
+  // Zone 8
+  area8_1: [
+    { name: "Reality Fracture", emoji: "🌀", color: "#7c3aed" },
+    { name: "Void Scarab",      emoji: "🪲", color: "#1e1b4b" },
+  ],
+  area8_2: [
+    { name: "Dimensional Rift",    emoji: "🕳️", color: "#312e81" },
+    { name: "Lost Deity Fragment", emoji: "💫", color: "#4338ca" },
+  ],
+  area8_3: [
+    { name: "Frozen Time Guardian", emoji: "⏳", color: "#0e7490" },
+    { name: "Ancient Construct",    emoji: "🗿", color: "#164e63" },
+  ],
+  area8_4: [
+    { name: "Cosmic Horror", emoji: "👾", color: "#1e1b4b" },
+    { name: "Void Titan",    emoji: "🌑", color: "#0f0f1a" },
+  ],
+  // Zone 9
+  area9_1: [
+    { name: "Soul Ferry Guardian", emoji: "⛵", color: "#4b5563" },
+    { name: "Death Current",       emoji: "🌊", color: "#1f2937" },
+  ],
+  area9_2: [
+    { name: "Judgment Shade Elder", emoji: "⚖️", color: "#4c1d95" },
+    { name: "Divine Exile",         emoji: "👤", color: "#5b21b6" },
+  ],
+  area9_3: [
+    { name: "Truth Guardian", emoji: "🪶", color: "#d97706" },
+    { name: "Scale Keeper",   emoji: "⚖️", color: "#b45309" },
+  ],
+  area9_4: [
+    { name: "Fallen Divine",            emoji: "😇", color: "#6b7280" },
+    { name: "Corrupted Osiris Fragment", emoji: "💔", color: "#374151" },
+  ],
+  // Zone 10
+  area10_1: [
+    { name: "Duality Construct", emoji: "☯️", color: "#f0ece0" },
+    { name: "Primordial Shade",  emoji: "🌑", color: "#111118" },
+  ],
+  area10_2: [
+    { name: "World Root Guardian", emoji: "🌳", color: "#15803d" },
+    { name: "Cosmic Parasite",     emoji: "🦠", color: "#166534" },
+  ],
+  area10_3: [
+    { name: "Between Horror", emoji: "👁️", color: "#1e1b4b" },
+    { name: "Reality Eater",  emoji: "🕳️", color: "#0f0f1a" },
+  ],
+  area10_4: [
+    { name: "The Unnamed",          emoji: "❓", color: "#374151" },
+    { name: "Primordial Construct", emoji: "⚙️", color: "#1f2937" },
+  ],
 };
 
 export default function CombatPage() {
@@ -424,11 +509,16 @@ export default function CombatPage() {
 
 
 const ZONE_INFO: Record<string, { name: string; alignment: string; color: string; icon: string }> = {
-  zone1: { name: "Delta Nil", alignment: "egypt", color: "#d97706", icon: "🌊" },
-  zone2: { name: "Padang Pasir Barat", alignment: "egypt", color: "#f59e0b", icon: "🏜️" },
-  zone3: { name: "Nekropolis", alignment: "egypt", color: "#7c3aed", icon: "💀" },
-  zone4: { name: "Kuil Karnak", alignment: "egypt", color: "#dc2626", icon: "🏛️" },
-  zone5: { name: "Lembah Eufrat", alignment: "mesopotamia", color: "#3b82f6", icon: "🌿" },
+  zone1:  { name: "Delta Nil",          alignment: "egypt",        color: "#d97706", icon: "🌊" },
+  zone2:  { name: "Padang Pasir Barat", alignment: "egypt",        color: "#f59e0b", icon: "🏜️" },
+  zone3:  { name: "Nekropolis",          alignment: "egypt",        color: "#7c3aed", icon: "💀" },
+  zone4:  { name: "Kuil Karnak",         alignment: "egypt",        color: "#dc2626", icon: "🏛️" },
+  zone5:  { name: "Lembah Eufrat",       alignment: "mesopotamia",  color: "#3b82f6", icon: "🌿" },
+  zone6:  { name: "Padang Sumeria",      alignment: "mesopotamia",  color: "#d97706", icon: "🦁" },
+  zone7:  { name: "Ziggurat Ur",         alignment: "mesopotamia",  color: "#6d28d9", icon: "🏯" },
+  zone8:  { name: "Gurun Axis Mundi",    alignment: "neutral",      color: "#818cf8", icon: "🌀" },
+  zone9:  { name: "Gerbang Aaru/Kur",    alignment: "neutral",      color: "#6b7280", icon: "⚖️" },
+  zone10: { name: "Axis Mundi",          alignment: "neutral",      color: "#f0ece0", icon: "☯️" },
 };
 
 function ZoneAreaList({
